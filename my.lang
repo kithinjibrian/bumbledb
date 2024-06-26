@@ -1,0 +1,84 @@
+let file_hook: hook {
+	__on_scope_exit__(fl: file&)
+	{
+		fclose(file);
+	}
+}
+
+let a_hook: hook {
+	__on_read__(a: int&)
+	{
+
+	},
+	__on_write__(a: int&)
+	{
+
+	},
+	__on_mutate__(old: int&, new: int&)
+	{
+		print("${old} ${new}");
+	}
+}
+
+let main_hook: hook {
+	__on_call__()
+	{
+
+	},
+	__on_return__()
+	{
+
+	},
+	__on_error__()
+	{
+
+	}
+}
+
+let int_mod: typemod {
+	__to_string__(int: int&)
+	{
+		return strings::format("int: ${int}");
+	}
+}
+
+let int_ref_mod: typemod {
+	__to_string__(int&: int&)
+	{
+		return strings::format("int: ${int*}");
+	}
+}
+
+let file_type: typemod {
+	__to_string__(file: file&)
+	{
+		return strings::format("${file.a} ${file.b}");
+	}
+}
+
+let file: struct<file_type> ?file_hook? {
+	a: int;
+	b: char*;
+	__equals__(a: file&, b: file&)
+	{
+		return a.a == b.a;
+	}
+}
+
+fun foo(fl: file&): -> file {
+	return file;
+}
+
+fun main(argc: int, argv: array<char *>): ?main_hook? -> void {
+	let a: int^int_mod ?a_hook? = 90;
+	let b: char* = strings::from("brian");
+
+	let c: int& = a;
+
+	let d: file = {
+		.a = 1,
+		.b = strings::from("kithinji)
+	};
+
+	foo(d);
+}

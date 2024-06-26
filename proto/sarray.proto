@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message string_array_proto
+{
+	repeated string str = 1;
+};

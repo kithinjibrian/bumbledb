@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+message server_keys_proto 
+{
+  bytes public_key = 3;
+  bytes secret_key = 4;
+  bytes sign_public_key = 5;
+  bytes sign_secret_key = 6;
+}

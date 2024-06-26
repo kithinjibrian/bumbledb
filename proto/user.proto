@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+message user_db_proto
+{
+  string username = 1;
+  bytes password = 2;
+  repeated string role = 3;
+}
+
+message user_transit_proto
+{
+	string username = 1;
+	string password = 2;
+};

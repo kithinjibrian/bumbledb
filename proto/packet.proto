@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+message request_proto {
+  string action = 1;
+  bool is_enc = 2;
+  bytes nonce = 3;
+  bytes body = 4;
+}
+
+message response_proto {
+  bool is_enc = 1;
+  bytes nonce = 2;
+  bytes body = 3;
+  bytes signature = 4;
+}

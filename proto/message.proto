@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+message auth_proto
+{
+	string token = 1;
+	int32 token_len = 2;
+	bytes authorization = 3;
+}
+
+message query_header
+{
+	string host = 1;
+	string user_agent = 2;
+	bytes authorization = 3;
+	string content_type = 4;
+}
+
+message query_proto
+{
+	query_header header = 1;
+	bytes body = 2;
+};
+
+message reply_header
+{
+	string server = 1;
+	string content_type = 2;
+}
+
+message reply_proto
+{
+	int32 status = 1;
+	string status_text = 2;
+	reply_header header = 3;
+	bytes body = 4;
+};
