@@ -1,11 +1,12 @@
 # Prerequisites
 *.d
 
-# log files
+# files
 log.txt
-
-#disk
-vdisk.dat
+error.log
+cache.quill
+users.quill
+crypto-keys.bin
 
 # Object files
 *.o

@@ -44,27 +44,3 @@ void sig_handler(int signal)
 	perror("signal");
 	exit(0);
 }
-
-/*
-
-	register_fs(simple_fs());
-	seed_dirs();
-
-	cache_restore();
-
-	cache_print();
-	bumble_routes();
-	user_routes();
-	db_routes();
-
-	SMART server_o *server = new_server(bumble, 1805, 1024, 3);
-	if (is_error(server))
-	{
-		print(server);
-		return 1;
-	}
-
-	accept_clients(server);
-
-	unregister_fs();
-*/
