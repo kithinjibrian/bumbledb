@@ -1,12 +1,4 @@
-#include "objects/print/print.h"
-#include "objects/natives/arrays/arrays.h"
-
-struct array_o
-{
-	int index;
-	int length;
-	object_o *array;
-};
+#include "objects/natives/arrays.h"
 
 int get_len_4x(int length)
 {
@@ -14,23 +6,6 @@ int get_len_4x(int length)
 	int new_len = length + (4 - remainder);
 
 	return new_len;
-}
-
-object_o array_get_state(object_o object)
-{
-	array_o *array = (array_o *)object;
-
-	array_o *state = new_array(0);
-
-	for (int a = 0; a < array->length; a++)
-	{
-		if (array->array[a])
-		{
-			array_push(state, share(array->array[a]));
-		}
-	}
-
-	return state;
 }
 
 void array_visitor(object_o object, fun_process_t fun_process)
@@ -87,8 +62,7 @@ array_o *array_from(int length, ...)
 
 	static const vtable_t vt = {
 		.__str__ = array_str,
-		.__visitor__ = array_visitor,
-		.__get_state__ = array_get_state};
+		.__visitor__ = array_visitor};
 
 	object_reg_dunders(array, &vt);
 
@@ -113,32 +87,11 @@ array_o *new_array(int length)
 
 	static const vtable_t vt = {
 		.__str__ = array_str,
-		.__visitor__ = array_visitor,
-		.__get_state__ = array_get_state};
+		.__visitor__ = array_visitor};
 
 	object_reg_dunders(array, &vt);
 
 	return array;
-}
-
-int array_length(array_o *array)
-{
-	return array->length;
-}
-
-int array_index(array_o *array)
-{
-	return array->index;
-}
-
-object_o *array_get_objects(array_o *array)
-{
-	return array->array;
-}
-
-void array_set_index(array_o *array, int index)
-{
-	array->index = index;
 }
 
 object_o array_shift(array_o *array, object_o object)

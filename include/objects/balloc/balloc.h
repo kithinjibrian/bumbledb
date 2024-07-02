@@ -20,10 +20,8 @@ typedef object_o (*fun_str_t)(object_o);
 typedef object_o (*fun_clone_t)(object_o);
 typedef void (*fun_print_t)(object_o, int);
 typedef void (*fun_free_t)(object_header_t *);
-typedef object_o (*fun_get_state_t)(object_o);
 typedef bool (*fun_equals_t)(object_o, object_o);
 typedef void (*fun_visitor_t)(object_o, fun_process_t);
-typedef object_o (*fun_set_state_t)(object_o, object_o);
 
 #define TYPES(TYPE)            \
 	TYPE(NT_NONE_O)            \
@@ -78,8 +76,6 @@ typedef struct vtable_t
 	fun_deinit_t __deinit__;
 	fun_equals_t __equals__;
 	fun_visitor_t __visitor__;
-	fun_get_state_t __get_state__;
-	fun_set_state_t __set_state__;
 } vtable_t;
 
 typedef struct data_info_t

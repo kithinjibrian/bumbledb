@@ -1,12 +1,4 @@
-#include "objects/print/print.h"
-#include "objects/natives/strings/strings.h"
-
-struct string_o
-{
-	int index;
-	int length;
-	char *str;
-};
+#include "objects/natives/strings.h"
 
 bool string_equals(object_o str1, object_o str2)
 {

@@ -1,5 +1,4 @@
-#include "objects/str/str.h"
-#include "objects/natives/strings/strings.h"
+#include "objects/dunder/str.h"
 
 object_o str(object_o object)
 {

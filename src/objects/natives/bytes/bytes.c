@@ -1,6 +1,6 @@
-#include "objects/print/print.h"
-#include "objects/natives/bytes/bytes.h"
+#include "objects/natives/bytes.h"
 
+/*
 void bytes_print(object_o object, int depth)
 {
 	uint8_t *bytes = (object_o)object;
@@ -24,7 +24,7 @@ void bytes_print(object_o object, int depth)
 		}
 	}
 	printf("\'" RESET);
-}
+}*/
 
 uint8_t *bytes_from(void *buffer, int length)
 {
@@ -33,11 +33,6 @@ uint8_t *bytes_from(void *buffer, int length)
 	dest = alloc(length, sizeof(uint8_t), NT_BYTES_O);
 
 	memcpy(dest, buffer, length);
-
-	static const vtable_t vt = {
-		.__print__ = bytes_print};
-
-	object_reg_dunders(dest, &vt);
 
 	return dest;
 }
@@ -49,11 +44,6 @@ uint8_t *new_bytes(int length)
 	dest = alloc(length, sizeof(uint8_t), NT_BYTES_O);
 
 	memset(dest, 0, length);
-
-	static const vtable_t vt = {
-		.__print__ = bytes_print};
-
-	object_reg_dunders(dest, &vt);
 
 	return dest;
 }

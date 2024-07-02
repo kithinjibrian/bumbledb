@@ -30,6 +30,19 @@
 		"drop.h": "c",
 		"htable.h": "c",
 		"keyvalue.h": "c",
-		"error.h": "c"
+		"error.h": "c",
+		"equals.h": "c",
+		"server.h": "c",
+		"function.h": "c",
+		"dunder.h": "c",
+		"state.h": "c",
+		"stdarg.h": "c",
+		"ntree.h": "c",
+		"file.h": "c",
+		"owner.h": "c",
+		"stdlib.h": "c",
+		"stdbool.h": "c",
+		"bytes.h": "c",
+		"sodium.h": "c"
 	}
 }

@@ -1,16 +1,20 @@
 #pragma once
-#ifndef DUMP_H
-#define DUMP_H
+#ifndef PICKLE_H
+#define PICKLE_H
 
 #include <stdio.h>
 #include <stdint.h>
 
-#include "objects/object.h"
-#include "dsa/tree/ntree.h"
+#include "objects/pool/pool.h"
+#include "objects/pool/alloc.h"
+#include "objects/owner/owner.h"
+#include "objects/natives/arrays.h"
+#include "objects/natives/strings.h"
 
 #define ERROR_UNCLOSED_STRING (1 << 4)
 
 typedef struct token_o token_o;
+typedef struct array_o array_o;
 
 typedef enum
 {

@@ -1,4 +1,4 @@
-#include "objects/clone/clone.h"
+#include "objects/dunder/clone.h"
 
 object_o clone(object_o object)
 {

@@ -46,13 +46,13 @@ bool bumble_next(bumble_o *self, request_o *request, response_o *response)
 		string_o *string = (string_o *)htable_get(request, string_from("action"));
 
 		function_o *function = array_next(self);
-		fun_middleware_t mw = (fun_middleware_t)function_fun(function);
+		fun_middleware_t mw = (fun_middleware_t)function->function;
 
-		if (strcmp(function_name(function), "global-mw") == 0)
+		if (strcmp(function->name, "global-mw") == 0)
 		{
 			mw(self, request, response);
 		}
-		else if (strcmp(function_name(function), cstring(string)) == 0)
+		else if (strcmp(function->name, cstring(string)) == 0)
 		{
 			mw(self, request, response);
 		}
@@ -78,8 +78,9 @@ void bumble_run(request_o *request, response_o *response)
 void bumble(client_o *client)
 {
 	RequestProto *req_proto;
-	SMART client_crypto_keys_o *client_keys = alloc(1, sizeof(client_crypto_keys_o), CLIENT_CRYPTO_KEYS_O);
-	client_keys->set = false;
+	SMART diffie_keys_o *diffie_keys = alloc(1, sizeof(diffie_keys_o), CLIENT_CRYPTO_KEYS_O);
+	diffie_keys->client_diffie_set = false;
+	diffie_keys->server_diffie_set = false;
 
 	// TODO: change this to be dynamic
 	uint8_t buffer[4096];
@@ -103,18 +104,18 @@ void bumble(client_o *client)
 		response_o *response = new_htable(10);
 		request_o *request = new_htable(10);
 		htable_set(request, string_from("client"), share(client));
-		htable_set(request, string_from("client_keys"), share(client_keys));
+		htable_set(request, string_from("client_keys"), share(diffie_keys));
 		htable_set(request, string_from("action"), string_from(req_proto->action));
 
 		if (req_proto->is_enc)
 		{
-			if (client_keys->set)
+			if (diffie_keys->client_diffie_set)
 			{
 
 				int len = req_proto->body.len - crypto_box_MACBYTES;
 				uint8_t *decrypted = new_bytes(len);
 
-				if (crypto_box_open_easy_afternm(decrypted, req_proto->body.data, req_proto->body.len, req_proto->nonce.data, client_keys->shared_key) != 0)
+				if (crypto_box_open_easy_afternm(decrypted, req_proto->body.data, req_proto->body.len, req_proto->nonce.data, diffie_keys->client_shared_key) != 0)
 				{
 					break;
 				}

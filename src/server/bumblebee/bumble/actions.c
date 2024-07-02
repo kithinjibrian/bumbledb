@@ -45,23 +45,34 @@ bool sign_public_key(bumble_o *self, request_o *req, response_o *res)
 
 bool diffie_public_key(bumble_o *self, request_o *req, response_o *res)
 {
-	return send_signed(req, res, bytes_from(get_public_key(), crypto_box_PUBLICKEYBYTES));
+	diffie_keys_o *diffie_keys = (diffie_keys_o *)htable_get(req, string_from("client_keys"));
+
+	crypto_box_keypair(diffie_keys->server_public_key, diffie_keys->server_secret_key);
+
+	diffie_keys->server_diffie_set = true;
+
+	return send_signed(req, res, bytes_from(diffie_keys->server_public_key, crypto_box_PUBLICKEYBYTES));
 }
 
 bool accept_public_key(bumble_o *self, request_o *req, response_o *res)
 {
 	SMART request_o *smt_req = req;
 	uint8_t *client_pk = (uint8_t *)htable_get(smt_req, string_from("body"));
-	client_crypto_keys_o *client_keys = (client_crypto_keys_o *)htable_get(smt_req, string_from("client_keys"));
+	diffie_keys_o *diffie_keys = (diffie_keys_o *)htable_get(smt_req, string_from("client_keys"));
 
-	if (crypto_box_beforenm(client_keys->shared_key, client_pk, get_secret_key()) != 0)
+	if (diffie_keys->server_diffie_set)
 	{
-		return send_unencrypted(share(smt_req), res, bytes_from("Error generating shared key!", 29));
+		if (crypto_box_beforenm(diffie_keys->client_shared_key, client_pk, diffie_keys->server_secret_key) != 0)
+		{
+			return send_unencrypted(share(smt_req), res, bytes_from("Error generating shared key!", 29));
+		}
+
+		diffie_keys->client_diffie_set = true;
+
+		return send_unencrypted(share(smt_req), res, bytes_from("Public key recieved", 20));
 	}
 
-	client_keys->set = true;
-
-	return send_unencrypted(share(smt_req), res, bytes_from("Public key recieved", 20));
+	return send_unencrypted(share(smt_req), res, bytes_from("Server error!", 14));
 }
 
 bool hello_world(bumble_o *self, request_o *req, response_o *res)

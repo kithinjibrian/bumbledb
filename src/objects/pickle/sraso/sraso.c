@@ -144,7 +144,7 @@ ast_node_o *parse_values(array_o *tokens)
 ast_node_o *parse_value(array_o *tokens)
 {
 	token_o *current = array_current(tokens);
-	token_o *ahead = array_at(tokens, array_index(tokens) + 1);
+	token_o *ahead = array_at(tokens, tokens->index + 1);
 
 	ast_node_o *ast_node = NULL;
 

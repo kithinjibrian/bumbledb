@@ -74,6 +74,7 @@ bool user_log_check(bumble_o *self, request_o *req, response_o *res)
 		SMART object_o saved_user = user_find(share(username));
 		if (is_error(saved_user))
 		{
+			bee_status(res, 401);
 			return bee_send(MOVE(req), MOVE(res), string_from("Login failed!"));
 		}
 
@@ -88,6 +89,7 @@ bool user_log_check(bumble_o *self, request_o *req, response_o *res)
 		return bumble_next(self, req, res);
 	}
 
+	bee_status(res, 401);
 	return bee_send(req, res, string_from("Body not provided!"));
 }
 

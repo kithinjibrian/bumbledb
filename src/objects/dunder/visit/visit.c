@@ -1,5 +1,4 @@
-#include "objects/visit/visit.h"
-#include "objects/natives/natives.h"
+#include "objects/dunder/visit.h"
 
 void post_visit(object_o object, fun_process_t fun_process)
 {

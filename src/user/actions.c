@@ -46,11 +46,12 @@ bool user_login(bumble_o *self, request_o *req, response_o *res)
 			cstring(password),
 			string_length(password)) != 0)
 	{
+		bee_status(res, 401);
 		return bee_send(req, res, string_from("Login failed!"));
 	}
 
 	htable_o *tkn = new_htable(2);
-	htable_set(tkn, string_from("expires-in"), number(4));
+	htable_set(tkn, string_from("expires-in"), number(2));
 	htable_set(tkn, string_from("username"), share(htable_get(user, string_from("username"))));
 
 	SMART uint8_t *token = ptoken(tkn);
@@ -60,6 +61,7 @@ bool user_login(bumble_o *self, request_o *req, response_o *res)
 		return bee_bytes(req, res, MOVE(token));
 	}
 
+	bee_status(res, 401);
 	return bee_send(req, res, string_from("Login failed!"));
 }
 

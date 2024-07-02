@@ -2,11 +2,13 @@
 *.d
 
 # files
+./.vscode
 log.txt
 error.log
 cache.quill
 users.quill
-crypto-keys.bin
+public_key.bin
+secret_key.bin
 
 # Object files
 *.o

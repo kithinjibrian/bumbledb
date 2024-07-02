@@ -1,5 +1,4 @@
-#include "objects/print/print.h"
-#include "objects/pickle/pickle.h"
+#include "objects/dunder/print.h"
 
 void __print__(ast_node_o *ast_node, int depth)
 {

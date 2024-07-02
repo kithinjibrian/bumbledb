@@ -1,11 +1,4 @@
-#include "objects/print/print.h"
-#include "objects/natives/function/function.h"
-
-struct function_o
-{
-	const char *name;
-	fun_generic_t function;
-};
+#include "objects/natives/function.h"
 
 object_o function_str(object_o object)
 {
@@ -30,14 +23,4 @@ function_o *function(const char *name, fun_generic_t fun_generic)
 	object_reg_dunders(function, &vt);
 
 	return function;
-}
-
-const char *function_name(function_o *function)
-{
-	return function->name;
-}
-
-fun_generic_t function_fun(function_o *function)
-{
-	return function->function;
 }

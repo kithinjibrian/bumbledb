@@ -5,8 +5,6 @@
 #include <stddef.h>
 
 #include "objects/pool/pool.h"
-#include "objects/visit/visit.h"
-#include "objects/natives/error/error.h"
 
 #define MUTABLE(object)                                                             \
 	do                                                                              \

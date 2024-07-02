@@ -1,4 +1,4 @@
-#include "objects/natives/file/file.h"
+#include "objects/natives/file.h"
 
 struct file_o
 {

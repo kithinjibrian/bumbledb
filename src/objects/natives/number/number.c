@@ -1,5 +1,4 @@
-#include "objects/print/print.h"
-#include "objects/natives/number/number.h"
+#include "objects/natives/number.h"
 
 object_o number_clone(object_o num)
 {

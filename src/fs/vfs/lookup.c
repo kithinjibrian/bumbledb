@@ -16,7 +16,7 @@ void walk(vfile_o **root_file, array_o *path)
 	SMART array_o *smt_path = path;
 
 	string_o *target = array_next(smt_path);
-	string_o *parent = array_at(smt_path, array_index(smt_path) - 2);
+	string_o *parent = array_at(smt_path, smt_path->index - 2);
 
 	if (target)
 	{
@@ -54,7 +54,7 @@ vfile_o *lookup(array_o *path)
 
 	SMART array_o *smt_path = path;
 
-	if (array_length(smt_path) == 1)
+	if (smt_path->length == 1)
 	{
 		dentry_o *d = dcache_get(string_from("//"));
 		if (d)
@@ -65,8 +65,8 @@ vfile_o *lookup(array_o *path)
 	}
 	else
 	{
-		child = array_length(smt_path) - 1;
-		parent = array_length(smt_path) - 2;
+		child = smt_path->length - 1;
+		parent = smt_path->length - 2;
 
 		key = dcache_key(
 			share(array_at(smt_path, parent)),

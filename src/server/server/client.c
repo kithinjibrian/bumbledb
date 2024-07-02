@@ -13,8 +13,10 @@ void accept_clients(server_o *server)
 
 	while (1)
 	{
-		if ((client->socket_fd = accept(server->socket_fd, address,
-										(socklen_t *)&addrlen)) < 0)
+		if ((client->socket_fd = accept(
+				 server->socket_fd,
+				 address,
+				 (socklen_t *)&addrlen)) < 0)
 		{
 			perror("accept");
 			break;

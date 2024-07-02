@@ -64,7 +64,7 @@ bool send_encrypted(request_o *req, response_o *res, uint8_t *bytes)
 	SMART uint8_t *smt_bytes = bytes;
 
 	client_o *client = (client_o *)htable_get(smt_req, string_from("client"));
-	client_crypto_keys_o *cck = (client_crypto_keys_o *)htable_get(smt_req, string_from("client_keys"));
+	diffie_keys_o *cck = (diffie_keys_o *)htable_get(smt_req, string_from("client_keys"));
 
 	int length = object_count(bytes) + crypto_box_MACBYTES;
 
@@ -79,7 +79,7 @@ bool send_encrypted(request_o *req, response_o *res, uint8_t *bytes)
 			smt_bytes,
 			object_count(smt_bytes),
 			nonce,
-			cck->shared_key) != 0)
+			cck->client_shared_key) != 0)
 	{
 		return false;
 	}

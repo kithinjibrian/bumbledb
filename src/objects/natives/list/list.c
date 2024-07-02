@@ -1,13 +1,4 @@
-#include "objects/print/print.h"
-#include "objects/natives/list/list.h"
-
-struct list_node_o
-{
-	object_o object;
-	pthread_mutex_t lock;
-	struct list_node_o *next;
-	struct list_node_o *prev;
-};
+#include "objects/natives/list.h"
 
 void list_visitor(object_o object, fun_process_t fun_process)
 {
@@ -47,20 +38,6 @@ object_o list_str(object_o object)
 	return string_format("(%q)", cnt);
 }
 
-object_o list_get_state(object_o object)
-{
-	list_node_o *node = (list_node_o *)object;
-	array_o *state = new_array(0);
-
-	while (node)
-	{
-		array_push(state, share(node->object));
-		node = node->next;
-	}
-
-	return state;
-}
-
 list_node_o *new_list_node(object_o object)
 {
 	list_node_o *node;
@@ -73,32 +50,11 @@ list_node_o *new_list_node(object_o object)
 
 	static const vtable_t vt = {
 		.__str__ = list_str,
-		.__visitor__ = list_visitor,
-		.__get_state__ = list_get_state};
+		.__visitor__ = list_visitor};
 
 	object_reg_dunders(node, &vt);
 
 	return node;
-}
-
-object_o list_get_object(list_node_o *node)
-{
-	return node->object;
-}
-
-object_o list_get_next(list_node_o *node)
-{
-	return node->next;
-}
-
-void list_set_object(list_node_o *node, object_o object)
-{
-	node->object = object;
-}
-
-void list_set_next(list_node_o **node, list_node_o *node_next)
-{
-	(*node)->next = node_next;
 }
 
 string_o *list_join(list_node_o *head, const char *del)

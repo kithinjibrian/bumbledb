@@ -1,71 +1,73 @@
 #include "crypto/crypto.h"
 
-struct crypto_keys_o
+struct sign_keys_o
 {
-	unsigned char public_key[crypto_box_PUBLICKEYBYTES];
-	unsigned char secret_key[crypto_box_SECRETKEYBYTES];
-	unsigned char sign_public_key[crypto_sign_PUBLICKEYBYTES];
-	unsigned char sign_secret_key[crypto_sign_SECRETKEYBYTES];
+	unsigned char public_key[crypto_sign_PUBLICKEYBYTES];
+	unsigned char secret_key[crypto_sign_SECRETKEYBYTES];
 };
 
-static crypto_keys_o *crypto_keys_g = NULL;
+static sign_keys_o *sign_keys_g = NULL;
 
-crypto_keys_o *crypto_get()
+sign_keys_o *sign_keys_get()
 {
-	if (crypto_keys_g == NULL)
+	if (sign_keys_g == NULL)
 	{
-		crypto_keys_g = new_crypto();
-		pool_globals_add(crypto_keys_g);
+		sign_keys_g = new_sign_keys();
+		pool_globals_add(sign_keys_g);
 	}
-	return crypto_keys_g;
+	return sign_keys_g;
 }
 
-crypto_keys_o *new_crypto(void)
+int sign_key_write(const char *filename, unsigned char *key, size_t length)
 {
-	crypto_keys_o *crypto_keys = NULL;
+	SMART file_o *key_file = f_open(filename, "wb");
 
-	crypto_keys = alloc(1, sizeof(crypto_keys_o), SERVER_CRYPTO_KEYS_O);
+	fwrite(key, length, 1, f_get(key_file));
 
-	SMART file_o *file = f_open("crypto-keys.bin", "rb");
-
-	if (is_error(file))
-	{
-		DROP(file);
-		file = f_open("crypto-keys.bin", "wb");
-
-		crypto_box_keypair(crypto_keys->public_key, crypto_keys->secret_key);
-		crypto_sign_keypair(crypto_keys->sign_public_key, crypto_keys->sign_secret_key);
-
-		fwrite(crypto_keys, 1, sizeof(crypto_keys_o), f_get(file));
-	}
-	else
-	{
-		fread(crypto_keys, 1, sizeof(crypto_keys_o), f_get(file));
-	}
-
-	return crypto_keys;
+	return 1;
 }
 
-unsigned char *get_public_key(void)
+int sign_key_read(const char *filename, unsigned char *key, size_t length)
 {
-	crypto_keys_o *crypto_keys = crypto_get();
-	return crypto_keys->public_key;
+	SMART file_o *key_file = f_open(filename, "rb");
+	if (is_error(key_file))
+	{
+		DROP(key_file);
+		return 0;
+	}
+
+	fread(key, length, 1, f_get(key_file));
+
+	return 1;
 }
 
-unsigned char *get_secret_key(void)
+sign_keys_o *new_sign_keys(void)
 {
-	crypto_keys_o *crypto_keys = crypto_get();
-	return crypto_keys->secret_key;
+	sign_keys_o *sign_keys;
+
+	sign_keys = alloc(1, sizeof(sign_keys_o), SERVER_CRYPTO_KEYS_O);
+
+	int a = sign_key_read("public_key.bin", sign_keys->public_key, crypto_sign_PUBLICKEYBYTES);
+	int b = sign_key_read("secret_key.bin", sign_keys->secret_key, crypto_sign_SECRETKEYBYTES);
+
+	if (a == 0 || b == 0)
+	{
+		crypto_sign_keypair(sign_keys->public_key, sign_keys->secret_key);
+		sign_key_write("public_key.bin", sign_keys->public_key, crypto_sign_PUBLICKEYBYTES);
+		sign_key_write("secret_key.bin", sign_keys->secret_key, crypto_sign_SECRETKEYBYTES);
+	}
+
+	return sign_keys;
 }
 
 unsigned char *get_sign_public_key(void)
 {
-	crypto_keys_o *crypto_keys = crypto_get();
-	return crypto_keys->sign_public_key;
+	sign_keys_o *sign_keys = sign_keys_get();
+	return sign_keys->public_key;
 }
 
 unsigned char *get_sign_secret_key(void)
 {
-	crypto_keys_o *crypto_keys = crypto_get();
-	return crypto_keys->sign_secret_key;
+	sign_keys_o *sign_keys = sign_keys_get();
+	return sign_keys->secret_key;
 }

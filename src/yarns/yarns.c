@@ -49,7 +49,7 @@ void *worker(object_o arg)
 
 		if (task != NULL)
 		{
-			fun_task_o fun_task = (fun_task_o)function_fun(task->function);
+			fun_task_o fun_task = (fun_task_o)task->function->function;
 			fun_task(task->args);
 
 			DROP(task);

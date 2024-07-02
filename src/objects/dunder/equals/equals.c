@@ -1,4 +1,4 @@
-#include "objects/equals/equals.h"
+#include "objects/dunder/equals.h"
 
 bool equal(object_o a, object_o b)
 {

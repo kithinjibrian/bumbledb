@@ -30,7 +30,6 @@ void bumble_routes();
 bool send_signed(request_o *req, response_o *res, uint8_t *bytes);
 bool send_unencrypted(request_o *req, response_o *res, uint8_t *bytes);
 bool send_encrypted(request_o *req, response_o *res, uint8_t *bytes);
-bool send_encrypted2(request_o *req, response_o *res, client_crypto_keys_o *client_keys, uint8_t *bytes);
 
 bool bee_bytes(request_o *req, response_o *res, uint8_t *bytes);
 bool bee_send(request_o *req, response_o *res, string_o *message);

@@ -1,5 +1,4 @@
-#include "objects/print/print.h"
-#include "objects/natives/error/error.h"
+#include "objects/natives/error.h"
 
 #define ERROR_LOG_FILE "error.log"
 

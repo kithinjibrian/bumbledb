@@ -1,13 +1,4 @@
-#include "objects/equals/equals.h"
-#include "objects/natives/arrays/arrays.h"
-#include "objects/natives/htable/htable.h"
-
-struct htable_o
-{
-	int size;
-	int elements;
-	list_node_o **table;
-};
+#include "objects/natives/htable.h"
 
 size_t __hash_calc__(char *key);
 
@@ -61,13 +52,13 @@ object_o htable_str(object_o object)
 			list_node_o *node = htable->table[a];
 			while (node)
 			{
-				keyvalue_o *keyvalue = list_get_object(node);
+				keyvalue_o *keyvalue = node->object;
 
 				string_o *key = str(keyvalue);
 
 				array_push(arr, key);
 
-				list_next(&node);
+				node = node->next;
 			}
 		}
 	}
@@ -75,22 +66,6 @@ object_o htable_str(object_o object)
 	SMART string_o *joined = array_join(arr, ", ");
 
 	return string_format("{%q}", joined);
-}
-
-object_o htable_get_state(object_o object)
-{
-	htable_o *htable = (htable_o *)object;
-	array_o *state = new_array(0);
-
-	for (int a = 0; a < htable->size; a++)
-	{
-		if (htable->table[a])
-		{
-			array_push(state, share(list_get_object(htable->table[a])));
-		}
-	}
-
-	return state;
 }
 
 htable_o *new_htable(int size)
@@ -110,22 +85,11 @@ htable_o *new_htable(int size)
 
 	static const vtable_t vt = {
 		.__str__ = htable_str,
-		.__visitor__ = htable_visitor,
-		.__get_state__ = htable_get_state};
+		.__visitor__ = htable_visitor};
 
 	object_reg_dunders(htable, &vt);
 
 	return htable;
-}
-
-int htable_get_size(htable_o *htable)
-{
-	return htable->size;
-}
-
-int htable_get_elements(htable_o *htable)
-{
-	return htable->elements;
 }
 
 void htable_resize(htable_o *htable)
@@ -143,10 +107,10 @@ void htable_resize(htable_o *htable)
 		current = htable->table[a];
 		while (current)
 		{
-			next = list_get_next(current);
-			key_value = list_get_object(current);
-			int index = hash(keyvalue_get_key(key_value), htable);
-			list_set_next(&current, new_table[index]);
+			next = current->next;
+			key_value = current->object;
+			int index = hash(key_value->key, htable);
+			current->next = new_table[index];
 			new_table[index] = current;
 			current = next;
 		}
@@ -204,7 +168,7 @@ object_o htable_get(htable_o *htable, object_o key)
 
 	if (key_value)
 	{
-		return keyvalue_get_value(key_value);
+		return key_value->value;
 	}
 
 	return NULL;
