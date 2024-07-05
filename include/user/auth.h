@@ -2,8 +2,8 @@
 #ifndef AUTH_H
 #define AUTH_H
 
+#include "quill/quill.h"
 #include "objects/object.h"
-#include "fs/quill/quill.h"
 #include "proto/user.pb-c.h"
 #include "server/bumblebee/bumble.h"
 

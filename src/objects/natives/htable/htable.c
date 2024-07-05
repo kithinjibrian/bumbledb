@@ -2,6 +2,14 @@
 
 size_t __hash_calc__(char *key);
 
+int get_len_4x2(int length)
+{
+	int remainder = length % 4;
+	int new_len = length + (4 - remainder);
+
+	return new_len;
+}
+
 size_t __hash_calc__(char *key)
 {
 	size_t hash = 2166136261u;
@@ -79,9 +87,9 @@ htable_o *new_htable(int size)
 
 	htable = alloc(1, sizeof(htable_o), NT_HASH_TABLE_O);
 
-	htable->size = size;
+	htable->size = get_len_4x2(size);
 	htable->elements = 0;
-	htable->table = alloc(size, sizeof(list_node_o *), NT_ARRAY_OBJECTS_O);
+	htable->table = alloc(htable->size, sizeof(list_node_o *), NT_ARRAY_OBJECTS_O);
 
 	static const vtable_t vt = {
 		.__str__ = htable_str,

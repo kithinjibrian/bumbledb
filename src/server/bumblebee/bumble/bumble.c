@@ -45,7 +45,9 @@ bool bumble_next(bumble_o *self, request_o *request, response_o *response)
 	{
 		string_o *string = (string_o *)htable_get(request, string_from("action"));
 
-		function_o *function = array_next(self);
+		array_next(self);
+		function_o *function = array_current(self);
+
 		fun_middleware_t mw = (fun_middleware_t)function->function;
 
 		if (strcmp(function->name, "global-mw") == 0)

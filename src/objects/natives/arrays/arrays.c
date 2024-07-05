@@ -43,6 +43,27 @@ object_o array_str(object_o object)
 	return string_format("[%q]", arr_str);
 }
 
+object_o array_add(object_o arr1, object_o arr2)
+{
+	array_o *array1 = (array_o *)arr1;
+	array_o *array2 = (array_o *)arr2;
+	int new_len = array1->length + array2->length;
+
+	array_o *new_arr = new_array(new_len);
+
+	for (int a = 0; a < array1->length; a++)
+	{
+		new_arr->array[a] = share(array1->array[a]);
+	}
+
+	for (int b = 0; b < array2->length; b++)
+	{
+		new_arr->array[array1->length + b] = share(array2->array[b]);
+	}
+
+	return new_arr;
+}
+
 array_o *array_from(int length, ...)
 {
 	va_list args;
@@ -62,6 +83,7 @@ array_o *array_from(int length, ...)
 
 	static const vtable_t vt = {
 		.__str__ = array_str,
+		.__add__ = array_add,
 		.__visitor__ = array_visitor};
 
 	object_reg_dunders(array, &vt);
@@ -87,6 +109,7 @@ array_o *new_array(int length)
 
 	static const vtable_t vt = {
 		.__str__ = array_str,
+		.__add__ = array_add,
 		.__visitor__ = array_visitor};
 
 	object_reg_dunders(array, &vt);
@@ -134,11 +157,11 @@ object_o array_pop(array_o *array)
 	RETURN(popped);
 }
 
-void array_insert(array_o *array, int pos, object_o object)
+bool array_insert(array_o *array, int pos, object_o object)
 {
 	if (pos > array->length - 1)
 	{
-		return;
+		return false;
 	}
 
 	object_o to_drop = array->array[pos];
@@ -149,6 +172,8 @@ void array_insert(array_o *array, int pos, object_o object)
 	}
 
 	array->array[pos] = object;
+
+	return true;
 }
 
 object_o array_at(array_o *array, int pos)
@@ -228,20 +253,20 @@ bool array_at_end(array_o *array)
 	return array->index >= array->length;
 }
 
-object_o array_next(array_o *array)
+bool array_next(array_o *array)
 {
 	int pos = array->index;
 	if (pos > array->length - 1)
 	{
-		return NULL;
+		return 0;
 	}
 
 	array->index++;
 
-	return array->array[pos];
+	return 1;
 }
 
-object_o array_prev(array_o *array)
+bool array_prev(array_o *array)
 {
 	array->index--;
 
@@ -249,10 +274,10 @@ object_o array_prev(array_o *array)
 	if (pos < 0)
 	{
 		array->index++;
-		return NULL;
+		return 0;
 	}
 
-	return array->array[pos];
+	return 1;
 }
 
 void array_rewind(array_o *array)

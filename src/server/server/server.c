@@ -48,7 +48,6 @@ server_o *new_server(fun_handle_t fun_handle, int port, int buffer_size, int bac
 	}
 
 	static const vtable_t vt = {
-		.__print__ = server_print,
 		.__deinit__ = server_deinit};
 
 	object_reg_dunders(server, &vt);

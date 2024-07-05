@@ -1,0 +1,9 @@
+import "other.orca";
+
+fun main(): void {
+	let b = [12, 13];
+
+	print(b[1]);
+}
+
+main();

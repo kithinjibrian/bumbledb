@@ -11,7 +11,7 @@ ast_node_o *parse_number(array_o *tokens);
 ast_node_o *parse_keyvalue(array_o *tokens);
 
 /*
-<start>		::= <value>
+<start>		::= <value> <EOL>
 <value>		::= <string> | <number> | <keyvalue> | <object> | <array> | <list>
 <keyvalue>	::= <key> ":" <value>
 <key>       ::= <string> | <number>
@@ -23,7 +23,15 @@ ast_node_o *parse_keyvalue(array_o *tokens);
 
 ast_node_o *parse(array_o *tokens)
 {
-	return parse_value(tokens);
+	ast_node_o *node = parse_value(tokens);
+
+	if (token_get_type(array_current(tokens)) != TOKEN_EOL)
+	{
+		DROP(node);
+		return error("Expected EOL", SILENT);
+	}
+
+	return node;
 }
 
 ast_node_o *parse_object(array_o *tokens)

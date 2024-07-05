@@ -7,6 +7,11 @@ bool string_equals(object_o str1, object_o str2)
 	return strcmp(str1_o->str, str2_o->str) == 0 ? true : false;
 }
 
+object_o string_add(object_o object, object_o object2)
+{
+	return string_push(share(object), share(object2));
+}
+
 object_o string_str(object_o object)
 {
 	return clone(object);
@@ -118,6 +123,7 @@ string_o *new_string(int length)
 
 	static const vtable_t vt = {
 		.__str__ = string_str,
+		.__add__ = string_add,
 		.__clone__ = string_clone,
 		.__equals__ = string_equals};
 

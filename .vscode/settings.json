@@ -43,6 +43,10 @@
 		"stdlib.h": "c",
 		"stdbool.h": "c",
 		"bytes.h": "c",
-		"sodium.h": "c"
+		"sodium.h": "c",
+		"crypto.h": "c",
+		"orca.h": "c",
+		"add.h": "c",
+		"cmath": "c"
 	}
 }

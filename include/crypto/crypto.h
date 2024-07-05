@@ -4,7 +4,6 @@
 
 #include <sodium.h>
 
-#include "fs/vfs/vfs.h"
 #include "cache/cache.h"
 #include "objects/object.h"
 

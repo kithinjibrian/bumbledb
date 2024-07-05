@@ -94,17 +94,26 @@ void __print__(ast_node_o *ast_node, int depth)
 
 void print(object_o object)
 {
+	SMART string_o *s = str(object);
+	printf("%s\n", cstring(s));
+}
+
+void pretty_print(object_o object)
+{
+	if (object == NULL)
+	{
+		printf("null\n");
+		return;
+	}
+
 	SMART array_o *tokens = NULL;
 	if (object_typeof(object) == NT_STRING_O)
 	{
-		SMART string_o *str = string_format("\"%q\"", object);
-		tokens = lexer(str);
+		tokens = lexer(string_format("\"%q\"", object));
 	}
 	else
 	{
-		SMART string_o *buffer = str(object);
-
-		tokens = lexer(buffer);
+		tokens = lexer(str(object));
 
 		if (is_error(tokens))
 		{

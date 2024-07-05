@@ -29,17 +29,11 @@ void __log_error__(error_o *error)
 	fclose(file);
 }
 
-void error_print(object_o object, int depth)
+object_o error_str(object_o object)
 {
 	error_o *error = (error_o *)object;
 
-	char space[depth];
-	memset(space, ' ', depth);
-	space[depth] = '\0';
-
-	printf(YELLOW "(error)" RESET ": {\n %smessage: ", space);
-	printf(RED "\"%s\"" RESET, error->error);
-	printf("\n%s}", space);
+	return string_from("{\"error\":\"%s\"}", error->error);
 }
 
 object_o error(const char *err, int type)
@@ -52,7 +46,7 @@ object_o error(const char *err, int type)
 	error->type = type;
 
 	static const vtable_t vt = {
-		.__print__ = error_print};
+		.__str__ = error_str};
 
 	object_reg_dunders(error, &vt);
 

@@ -15,13 +15,7 @@ typedef struct object_header_t object_header_t;
 
 typedef void (*fun_process_t)(object_header_t *, object_o);
 
-typedef void (*fun_deinit_t)(object_o);
-typedef object_o (*fun_str_t)(object_o);
-typedef object_o (*fun_clone_t)(object_o);
-typedef void (*fun_print_t)(object_o, int);
 typedef void (*fun_free_t)(object_header_t *);
-typedef bool (*fun_equals_t)(object_o, object_o);
-typedef void (*fun_visitor_t)(object_o, fun_process_t);
 
 #define TYPES(TYPE)            \
 	TYPE(NT_NONE_O)            \
@@ -47,6 +41,8 @@ typedef void (*fun_visitor_t)(object_o, fun_process_t);
 	TYPE(TOKEN_O)              \
 	TYPE(VFILE_O)              \
 	TYPE(INODE_O)              \
+	TYPE(LEXER_O)              \
+	TYPE(FRAME_O)              \
 	TYPE(DENTRY_O)             \
 	TYPE(CLIENT_O)             \
 	TYPE(SERVER_O)             \
@@ -68,13 +64,32 @@ typedef enum
 	TYPES(GENERATE_ENUM_DT)
 } data_type_e;
 
+typedef void (*fun_deinit_t)(object_o);
+typedef object_o (*fun_str_t)(object_o);
+typedef object_o (*fun_clone_t)(object_o);
+typedef bool (*fun_equals_t)(object_o, object_o);
+typedef object_o (*fun_add_t)(object_o, object_o);
+typedef object_o (*fun_mult_t)(object_o, object_o);
+typedef object_o (*fun_minus_t)(object_o, object_o);
+typedef object_o (*fun_divide_t)(object_o, object_o);
+typedef object_o (*fun_modulo_t)(object_o, object_o);
+typedef object_o (*fun_lesser_t)(object_o, object_o);
+typedef object_o (*fun_greater_t)(object_o, object_o);
+typedef void (*fun_visitor_t)(object_o, fun_process_t);
+
 typedef struct vtable_t
 {
+	fun_add_t __add__;
 	fun_str_t __str__;
-	fun_print_t __print__;
+	fun_mult_t __mult__;
+	fun_minus_t __minus__;
 	fun_clone_t __clone__;
+	fun_modulo_t __modulo__;
+	fun_divide_t __divide__;
 	fun_deinit_t __deinit__;
 	fun_equals_t __equals__;
+	fun_lesser_t __lesser__;
+	fun_greater_t __greater__;
 	fun_visitor_t __visitor__;
 } vtable_t;
 

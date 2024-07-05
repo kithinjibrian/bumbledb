@@ -2,12 +2,17 @@
 
 void sig_handler(int signal);
 
-void seed_dirs()
+int main()
 {
-	SMART long *etc = dir_make("/etc");
-	SMART long *home = dir_make("/home");
+	{
+		SMART htable_o *global = orca(string_from("hello.orca"));
+	}
+	drop_globals();
+	object_info_all();
+	return 0;
 }
 
+/*
 int main()
 {
 	{
@@ -43,4 +48,4 @@ void sig_handler(int signal)
 	drop_globals();
 	perror("signal");
 	exit(0);
-}
+}*/
