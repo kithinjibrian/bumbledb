@@ -33,6 +33,10 @@ void v_import_smt(ast_node_o *node, fun_process_t fun_process)
 void v_unary_exp(ast_node_o *node, fun_process_t fun_process)
 {
 	post_visit(node->unary_exp.operand, fun_process);
+	if (node->unary_exp.operand->next)
+	{
+		post_visit(node->unary_exp.operand->next, fun_process);
+	}
 }
 
 void v_key_value(ast_node_o *ast_node, fun_process_t fun_process)
@@ -43,7 +47,12 @@ void v_key_value(ast_node_o *ast_node, fun_process_t fun_process)
 
 void v_binary_exp(ast_node_o *ast_node, fun_process_t fun_process)
 {
-	post_visit(ast_node->binary_exp.left, fun_process);
+	ast_node_o *left = ast_node->binary_exp.left;
+	while (left)
+	{
+		post_visit(left, fun_process);
+		left = left->next;
+	}
 	post_visit(ast_node->binary_exp.right, fun_process);
 }
 
@@ -110,6 +119,18 @@ void v_function_call(ast_node_o *ast_node, fun_process_t fun_process)
 	}
 }
 
+void v_field_access(ast_node_o *ast_node, fun_process_t fun_process)
+{
+	post_visit(ast_node->field_access.child, fun_process);
+	post_visit(ast_node->field_access.parent, fun_process);
+}
+
+void v_array_access(ast_node_o *ast_node, fun_process_t fun_process)
+{
+	post_visit(ast_node->array_access.parent, fun_process);
+	post_visit(ast_node->array_access.expression, fun_process);
+}
+
 void v_object(ast_node_o *ast_node, fun_process_t fun_process)
 {
 	ast_node_o *next = NULL;
@@ -122,15 +143,37 @@ void v_object(ast_node_o *ast_node, fun_process_t fun_process)
 	}
 }
 
-void v_super_elements(ast_node_o *ast_node, fun_process_t fun_process)
+void v_program(ast_node_o *ast_node, fun_process_t fun_process)
 {
-	ast_node_o *next = NULL;
-	ast_node_o *current = ast_node->super_statement.statement;
+	ast_node_o *current = ast_node->program.sources;
 	while (current)
 	{
-		next = current->next;
 		post_visit(current, fun_process);
-		current = next;
+		current = current->next;
+	}
+}
+
+void v_super_elements(ast_node_o *ast_node, fun_process_t fun_process)
+{
+	ast_node_o *current = ast_node->super_statement.statement;
+
+	// printf("super statement: %d\n", ast_node->super_statement.type);
+
+	if (ast_node)
+	{
+		post_visit(current, fun_process);
+		post_visit(ast_node->next, fun_process);
+	}
+}
+
+void v_block_statement(ast_node_o *ast_node, fun_process_t fun_process)
+{
+	ast_node_o *current = ast_node->block_statement.stmts;
+
+	while (current)
+	{
+		post_visit(current, fun_process);
+		current = current->next;
 	}
 }
 
@@ -223,6 +266,14 @@ void v_struct_instance(ast_node_o *ast_node, fun_process_t fun_process)
 	post_visit(ast_node->struct_instance.identifier, fun_process);
 }
 
+void v_expression_elements(ast_node_o *ast_node, fun_process_t fun_process)
+{
+	if (ast_node)
+	{
+		post_visit(ast_node->next, fun_process);
+	}
+}
+
 static htable_o *v_table_g = NULL;
 
 void ast_visit(ast_node_o *ast_node, fun_process_t fun_process)
@@ -240,6 +291,7 @@ void ast_visit(ast_node_o *ast_node, fun_process_t fun_process)
 		htable_set(v_table_g, number(NODE_STRUCT), function("struct", (fun_generic_t)v_struct));
 		htable_set(v_table_g, number(NODE_STRING), function("string", (fun_generic_t)v_string));
 		htable_set(v_table_g, number(NODE_OBJECT), function("object", (fun_generic_t)v_object));
+		htable_set(v_table_g, number(NODE_PROGRAM), function("program", (fun_generic_t)v_program));
 		htable_set(v_table_g, number(NODE_KEY_VALUE), function("number", (fun_generic_t)v_key_value));
 		htable_set(v_table_g, number(NODE_CONTINUE), function("continue", (fun_generic_t)v_continue));
 		htable_set(v_table_g, number(NODE_IMPORT), function("import_smt", (fun_generic_t)v_import_smt));
@@ -251,19 +303,26 @@ void ast_visit(ast_node_o *ast_node, fun_process_t fun_process)
 		htable_set(v_table_g, number(NODE_FUNCTION_DEC), function("function_dec", (fun_generic_t)v_function_dec));
 		htable_set(v_table_g, number(NODE_REFERENCE), function("reference", (fun_generic_t)v_reference));
 		htable_set(v_table_g, number(NODE_DEREFERENCE), function("reference", (fun_generic_t)v_dereference));
+		htable_set(v_table_g, number(NODE_FIELD_ACCESS), function("field access", (fun_generic_t)v_field_access));
+		htable_set(v_table_g, number(NODE_ARRAY_ACCESS), function("array access", (fun_generic_t)v_array_access));
 		htable_set(v_table_g, number(NODE_PARAMETER_DEC), function("parameter_dec", (fun_generic_t)v_parameter_dec));
 		htable_set(v_table_g, number(NODE_FUNCTION_CALL), function("function_call", (fun_generic_t)v_function_call));
 		htable_set(v_table_g, number(NODE_FOR_STATEMENT), function("for_statement", (fun_generic_t)v_for_statement));
 		htable_set(v_table_g, number(NODE_WHILE_STATEMENT), function("while_statement", (fun_generic_t)v_while_statement));
 		htable_set(v_table_g, number(NODE_SUPER_STATEMENT), function("super_statement", (fun_generic_t)v_super_elements));
+		htable_set(v_table_g, number(NODE_BLOCK), function("block_statement", (fun_generic_t)v_block_statement));
 		htable_set(v_table_g, number(NODE_NT_FUNCTION), function("nt_function_call", (fun_generic_t)v_nt_function_call));
+		htable_set(v_table_g, number(NODE_EXPRESSION), function("express_statement", (fun_generic_t)v_expression_elements));
 		htable_set(v_table_g, number(NODE_STRUCT_INSTANCE), function("struct_instance", (fun_generic_t)v_struct_instance));
 	}
 
 	if (ast_node == NULL)
 		return;
 
+	printf("Visiting: %d\n", ast_node->node_type);
+
 	function_o *function = (function_o *)htable_get(v_table_g, number(ast_node->node_type));
+	print(function);
 
 	if (function == NULL)
 	{

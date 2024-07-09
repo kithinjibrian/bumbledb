@@ -67,6 +67,8 @@ void eat_token(array_o *tokens, char *value)
 
 ast_node_o *pstring(array_o *tokens)
 {
+	// printf("pstring\n");
+
 	token_o *tkn = array_current(tokens);
 
 	ast_node_o *ast_node = new_ast_node(NODE_STRING);
@@ -79,6 +81,8 @@ ast_node_o *pstring(array_o *tokens)
 
 ast_node_o *pnumber(array_o *tokens)
 {
+	// printf("pnumber\n");
+
 	token_o *tkn = array_current(tokens);
 
 	ast_node_o *ast_node = new_ast_node(NODE_NUMBER);
@@ -92,6 +96,8 @@ ast_node_o *pnumber(array_o *tokens)
 
 ast_node_o *identifier(array_o *tokens)
 {
+	// printf("identifier\n");
+
 	token_o *tkn = array_current(tokens);
 
 	ast_node_o *ast_node = new_ast_node(NODE_WORD);
@@ -104,6 +110,8 @@ ast_node_o *identifier(array_o *tokens)
 
 ast_node_o *key(array_o *tokens)
 {
+	// printf("key\n");
+
 	token_o *tkn = array_current(tokens);
 	ast_node_o *ast_node = NULL;
 
@@ -129,6 +137,8 @@ ast_node_o *key(array_o *tokens)
 
 ast_node_o *key_value(array_o *tokens)
 {
+	// printf("key_value\n");
+
 	ast_node_o *node = new_ast_node(NODE_KEY_VALUE);
 	node->key_value.key = key(tokens);
 	eat_token(tokens, ":");
@@ -139,6 +149,8 @@ ast_node_o *key_value(array_o *tokens)
 
 ast_node_o *key_value_list(array_o *tokens)
 {
+	// printf("key_value_list\n");
+
 	ast_node_o *node = key_value(tokens);
 
 	if (check_token_type(tokens, TOKEN_COMMA))
@@ -153,6 +165,8 @@ ast_node_o *key_value_list(array_o *tokens)
 
 ast_node_o *htable_literal(array_o *tokens)
 {
+	// printf("htable_literal\n");
+
 	eat_token(tokens, "map");
 	eat_token(tokens, "{");
 	ast_node_o *node = new_ast_node(NODE_OBJECT);
@@ -165,6 +179,8 @@ ast_node_o *htable_literal(array_o *tokens)
 
 ast_node_o *array_literal(array_o *tokens)
 {
+	// printf("array_literal\n");
+
 	eat_token(tokens, "array");
 	eat_token(tokens, "{");
 
@@ -185,6 +201,8 @@ ast_node_o *array_literal(array_o *tokens)
 
 ast_node_o *list_literal(array_o *tokens)
 {
+	// printf("list_literal\n");
+
 	eat_token(tokens, "list");
 	eat_token(tokens, "{");
 
@@ -205,6 +223,8 @@ ast_node_o *list_literal(array_o *tokens)
 
 ast_node_o *struct_literal(array_o *tokens)
 {
+	// printf("struct_literal\n");
+
 	token_o *struct_name = array_current(tokens);
 	array_next(tokens);
 	eat_token(tokens, "{");
@@ -223,6 +243,8 @@ ast_node_o *struct_literal(array_o *tokens)
 
 ast_node_o *primary_expression(array_o *tokens)
 {
+	// printf("primary_expression\n");
+
 	token_o *current = array_current(tokens);
 	ast_node_o *node = NULL;
 
@@ -327,6 +349,8 @@ ast_node_o *primary_expression(array_o *tokens)
 
 ast_node_o *function_or_primary_expression(array_o *tokens)
 {
+	// printf("function_or_primary_expression\n");
+
 	if (check_token_value(tokens, "fun"))
 	{
 		return function_expression(tokens);
@@ -337,6 +361,8 @@ ast_node_o *function_or_primary_expression(array_o *tokens)
 
 ast_node_o *member_expression_part(array_o *tokens)
 {
+	printf("member_expression_part\n");
+
 	if (check_token_type(tokens, TOKEN_DOT))
 	{
 		array_next(tokens);
@@ -355,6 +381,8 @@ ast_node_o *member_expression_part(array_o *tokens)
 
 ast_node_o *argument_list(array_o *tokens)
 {
+	printf("argument_list\n");
+
 	ast_node_o *node = assignment_expression(tokens);
 
 	if (check_token_type(tokens, TOKEN_COMMA))
@@ -369,6 +397,7 @@ ast_node_o *argument_list(array_o *tokens)
 
 ast_node_o *arguments(array_o *tokens)
 {
+	// printf("arguments\n");
 
 	ast_node_o *node = NULL;
 
@@ -386,6 +415,8 @@ ast_node_o *arguments(array_o *tokens)
 
 ast_node_o *native_function(array_o *tokens)
 {
+	// printf("native_function\n");
+
 	ast_node_o *node = new_ast_node(NODE_NT_FUNCTION);
 	node->nt_function_call.identifier = identifier(tokens);
 	eat_token(tokens, "!");
@@ -395,6 +426,8 @@ ast_node_o *native_function(array_o *tokens)
 
 ast_node_o *call_expression(array_o *tokens)
 {
+	// printf("call_expression\n");
+
 	token_o *prev = array_at(tokens, tokens->index - 1);
 	token_o *prev_prev = array_at(tokens, tokens->index - 2);
 
@@ -436,6 +469,8 @@ ast_node_o *call_expression(array_o *tokens)
 
 ast_node_o *member_expression(array_o *tokens)
 {
+	// printf("member_expression\n");
+
 	if (check_token_type(tokens, TOKEN_DOT) ||
 		check_token_type(tokens, TOKEN_LBRACKET))
 	{
@@ -447,6 +482,8 @@ ast_node_o *member_expression(array_o *tokens)
 
 ast_node_o *left_hand_expression(array_o *tokens)
 {
+	// printf("left_hand_expression\n");
+
 	ast_node_o *node = member_expression(tokens);
 
 	while (check_token_type(tokens, TOKEN_DOT) ||
@@ -475,12 +512,47 @@ ast_node_o *left_hand_expression(array_o *tokens)
 
 ast_node_o *post_fix_expression(array_o *tokens)
 {
-	ast_node_o *node = left_hand_expression(tokens);
+	// printf("post_fix_expression\n");
+
+	ast_node_o *node = primary_expression(tokens);
+
+	while (check_token_type(tokens, TOKEN_DOT) ||
+		   check_token_type(tokens, TOKEN_LBRACKET) ||
+		   check_token_type(tokens, TOKEN_LPAREN))
+	{
+		if (check_token_type(tokens, TOKEN_DOT))
+		{
+			eat_token(tokens, ".");
+			ast_node_o *field = new_ast_node(NODE_FIELD_ACCESS);
+			field->field_access.parent = node;
+			field->field_access.child = identifier(tokens);
+			node = field;
+		}
+		else if (check_token_type(tokens, TOKEN_LBRACKET))
+		{
+			eat_token(tokens, "[");
+			ast_node_o *array = new_ast_node(NODE_ARRAY_ACCESS);
+			array->array_access.expression = expression(tokens);
+			array->array_access.parent = node;
+			node = array;
+			eat_token(tokens, "]");
+		}
+		else if (check_token_type(tokens, TOKEN_LPAREN))
+		{
+			ast_node_o *fun = new_ast_node(NODE_FUNCTION_CALL);
+			fun->function_call.arguments = arguments(tokens);
+			fun->function_call.identifier = node;
+			node = fun;
+		}
+	}
+
 	return node;
 }
 
 ast_node_o *unary_expression(array_o *tokens)
 {
+	// printf("unary_expression\n");
+
 	ast_node_o *node = NULL;
 
 	if (check_token_type(tokens, TOKEN_MULT))
@@ -499,6 +571,8 @@ ast_node_o *unary_expression(array_o *tokens)
 
 ast_node_o *multiplicative_expression(array_o *tokens)
 {
+	// printf("multiplicative_expression\n");
+
 	ast_node_o *left = unary_expression(tokens);
 
 	token_o *current = array_current(tokens);
@@ -525,6 +599,8 @@ ast_node_o *multiplicative_expression(array_o *tokens)
 
 ast_node_o *additive_expression(array_o *tokens)
 {
+	// printf("additive_expression\n");
+
 	ast_node_o *left = multiplicative_expression(tokens);
 
 	token_o *current = array_current(tokens);
@@ -549,6 +625,8 @@ ast_node_o *additive_expression(array_o *tokens)
 
 ast_node_o *shift_expression(array_o *tokens)
 {
+	// printf("shift_expression\n");
+
 	ast_node_o *left = additive_expression(tokens);
 
 	return left;
@@ -556,6 +634,8 @@ ast_node_o *shift_expression(array_o *tokens)
 
 ast_node_o *relational_expression(array_o *tokens)
 {
+	// printf("relational_expression\n");
+
 	ast_node_o *left = shift_expression(tokens);
 
 	token_o *current = array_current(tokens);
@@ -606,6 +686,8 @@ ast_node_o *relational_expression(array_o *tokens)
 
 ast_node_o *equality_expression(array_o *tokens)
 {
+	// printf("equality_expression\n");
+
 	ast_node_o *left = relational_expression(tokens);
 
 	token_o *current = array_current(tokens);
@@ -639,6 +721,8 @@ ast_node_o *equality_expression(array_o *tokens)
 
 ast_node_o *bitwise_and_expression(array_o *tokens)
 {
+	// printf("bitwise_and_expression\n");
+
 	ast_node_o *left = equality_expression(tokens);
 
 	token_o *current = array_current(tokens);
@@ -663,6 +747,8 @@ ast_node_o *bitwise_and_expression(array_o *tokens)
 
 ast_node_o *bitwise_xor_expression(array_o *tokens)
 {
+	// printf("bitwise_xor_expression\n");
+
 	ast_node_o *left = bitwise_and_expression(tokens);
 
 	token_o *current = array_current(tokens);
@@ -686,6 +772,8 @@ ast_node_o *bitwise_xor_expression(array_o *tokens)
 
 ast_node_o *bitwise_or_expression(array_o *tokens)
 {
+	// printf("bitwise_or_expression\n");
+
 	ast_node_o *left = bitwise_xor_expression(tokens);
 
 	token_o *current = array_current(tokens);
@@ -710,6 +798,8 @@ ast_node_o *bitwise_or_expression(array_o *tokens)
 
 ast_node_o *logical_and_expression(array_o *tokens)
 {
+	// printf("logical_and_expression\n");
+
 	ast_node_o *left = bitwise_or_expression(tokens);
 
 	token_o *current = array_current(tokens);
@@ -737,6 +827,8 @@ ast_node_o *logical_and_expression(array_o *tokens)
 
 ast_node_o *logical_or_expression(array_o *tokens)
 {
+	// printf("logical_or_expression\n");
+
 	ast_node_o *left = logical_and_expression(tokens);
 
 	token_o *current = array_current(tokens);
@@ -765,6 +857,8 @@ ast_node_o *logical_or_expression(array_o *tokens)
 
 ast_node_o *conditional_expression(array_o *tokens)
 {
+	// printf("conditional_expression\n");
+
 	ast_node_o *condition = logical_or_expression(tokens);
 
 	if (check_token_type(tokens, TOKEN_QUESTION))
@@ -786,9 +880,11 @@ ast_node_o *conditional_expression(array_o *tokens)
 
 ast_node_o *assignment_expression(array_o *tokens)
 {
+	// printf("assignment_expression\n");
+
 	int index = tokens->index;
 
-	ast_node_o *node = unary_expression(tokens);
+	ast_node_o *node = conditional_expression(tokens);
 
 	if (check_token_type(tokens, TOKEN_EQUALS))
 	{
@@ -804,20 +900,25 @@ ast_node_o *assignment_expression(array_o *tokens)
 
 		node = exp;
 	}
-	else
-	{
-		DROP(node);
-		tokens->index = index;
+	// else
+	// {
+	// 	DROP(node);
+	// 	tokens->index = index;
 
-		node = conditional_expression(tokens);
-	}
+	// 	printf("Rerouting to conditional_expression\n");
+
+	// 	node = conditional_expression(tokens);
+	// }
 
 	return node;
 }
 
 ast_node_o *expression(array_o *tokens)
 {
+	// printf("expression\n");
+
 	ast_node_o *node = assignment_expression(tokens);
+
 	while (check_token_type(tokens, TOKEN_COMMA))
 	{
 		array_next(tokens);
@@ -829,9 +930,9 @@ ast_node_o *expression(array_o *tokens)
 
 ast_node_o *expression_statement(array_o *tokens)
 {
-	ast_node_o *node = new_ast_node(NODE_SUPER_STATEMENT);
-	node->super_statement.statement = expression(tokens);
-	node->super_statement.type = STATEMENT_EXPRESSION;
+	// printf("expression_statement\n");
+
+	ast_node_o *node = expression(tokens);
 
 	if (!check_token_type(tokens, TOKEN_SEMICOLON))
 	{
@@ -846,6 +947,8 @@ ast_node_o *expression_statement(array_o *tokens)
 
 ast_node_o *type_annotation_opt(array_o *tokens)
 {
+	// printf("type_annotation_opt\n");
+
 	if (check_token_type(tokens, TOKEN_COLON))
 	{
 		array_next(tokens);
@@ -858,6 +961,8 @@ ast_node_o *type_annotation_opt(array_o *tokens)
 
 ast_node_o *initializer_opt(array_o *tokens)
 {
+	// printf("initializer_opt\n");
+
 	if (check_token_type(tokens, TOKEN_EQUALS))
 	{
 		array_next(tokens);
@@ -869,6 +974,8 @@ ast_node_o *initializer_opt(array_o *tokens)
 
 ast_node_o *declaration(array_o *tokens)
 {
+	// printf("declaration\n");
+
 	ast_node_o *node = new_ast_node(NODE_VARIABLE);
 	node->variable.identifier = identifier(tokens);
 	node->variable.type = type_annotation_opt(tokens);
@@ -879,6 +986,8 @@ ast_node_o *declaration(array_o *tokens)
 
 ast_node_o *declaration_list(array_o *tokens)
 {
+	// printf("declaration_list\n");
+
 	ast_node_o *node = declaration(tokens);
 
 	while (check_token_type(tokens, TOKEN_COMMA))
@@ -892,11 +1001,11 @@ ast_node_o *declaration_list(array_o *tokens)
 
 ast_node_o *variable_statement(array_o *tokens)
 {
+	// printf("variable_statement\n");
+
 	array_next(tokens);
 
-	ast_node_o *variable = new_ast_node(NODE_SUPER_STATEMENT);
-	variable->super_statement.statement = declaration_list(tokens);
-	variable->super_statement.type = STATEMENT_VARIABLE;
+	ast_node_o *variable = declaration_list(tokens);
 
 	if (!check_token_type(tokens, TOKEN_SEMICOLON))
 	{
@@ -911,6 +1020,8 @@ ast_node_o *variable_statement(array_o *tokens)
 
 ast_node_o *continue_statement(array_o *tokens)
 {
+	// printf("continue_statement\n");
+
 	array_next(tokens);
 
 	if (!check_token_type(tokens, TOKEN_SEMICOLON))
@@ -928,6 +1039,8 @@ ast_node_o *continue_statement(array_o *tokens)
 
 ast_node_o *break_statement(array_o *tokens)
 {
+	// printf("break_statement\n");
+
 	array_next(tokens);
 
 	if (!check_token_type(tokens, TOKEN_SEMICOLON))
@@ -945,6 +1058,8 @@ ast_node_o *break_statement(array_o *tokens)
 
 ast_node_o *return_statement(array_o *tokens)
 {
+	// printf("return_statement\n");
+
 	array_next(tokens);
 
 	ast_node_o *node = new_ast_node(NODE_RETURN);
@@ -966,6 +1081,8 @@ ast_node_o *return_statement(array_o *tokens)
 
 ast_node_o *for_statement(array_o *tokens)
 {
+	// printf("for_statement\n");
+
 	ast_node_o *node = new_ast_node(NODE_FOR_STATEMENT);
 	eat_token(tokens, "for");
 	eat_token(tokens, "(");
@@ -980,6 +1097,8 @@ ast_node_o *for_statement(array_o *tokens)
 
 ast_node_o *while_statement(array_o *tokens)
 {
+	// printf("while_statement\n");
+
 	eat_token(tokens, "while");
 	eat_token(tokens, "(");
 	ast_node_o *condition = expression(tokens);
@@ -995,6 +1114,8 @@ ast_node_o *while_statement(array_o *tokens)
 
 ast_node_o *if_statement(array_o *tokens)
 {
+	// printf("if_statement\n");
+
 	eat_token(tokens, "if");
 	eat_token(tokens, "(");
 	ast_node_o *condition = expression(tokens);
@@ -1018,6 +1139,8 @@ ast_node_o *if_statement(array_o *tokens)
 
 ast_node_o *statement_list(array_o *tokens)
 {
+	// printf("statement_list\n");
+
 	ast_node_o *node = statement(tokens);
 	if (node && !check_token_type(tokens, TOKEN_RBRACE))
 	{
@@ -1031,15 +1154,14 @@ ast_node_o *statement_list(array_o *tokens)
 
 ast_node_o *block_statement(array_o *tokens)
 {
-	ast_node_o *node = NULL;
+	// printf("block_statement\n");
+
+	ast_node_o *node = new_ast_node(NODE_BLOCK);
 
 	eat_token(tokens, "{");
 	if (!check_token_type(tokens, TOKEN_RBRACE))
 	{
-
-		node = new_ast_node(NODE_SUPER_STATEMENT);
-		node->super_statement.statement = statement_list(tokens);
-		node->super_statement.type = STATEMENT_BLOCK;
+		node->block_statement.stmts = statement_list(tokens);
 	}
 
 	eat_token(tokens, "}");
@@ -1049,6 +1171,8 @@ ast_node_o *block_statement(array_o *tokens)
 
 ast_node_o *import_statement(array_o *tokens)
 {
+	// printf("import_statement\n");
+
 	eat_token(tokens, "import");
 	ast_node_o *node = new_ast_node(NODE_IMPORT);
 	node->import_smt.path = identifier(tokens);
@@ -1060,6 +1184,8 @@ ast_node_o *import_statement(array_o *tokens)
 
 ast_node_o *parameter(array_o *tokens)
 {
+	// printf("parameter\n");
+
 	ast_node_o *node = new_ast_node(NODE_VARIABLE);
 	node->variable.identifier = identifier(tokens);
 	node->variable.type = type_annotation_opt(tokens);
@@ -1070,6 +1196,8 @@ ast_node_o *parameter(array_o *tokens)
 
 ast_node_o *parameter_list(array_o *tokens)
 {
+	// printf("parameter_list\n");
+
 	ast_node_o *node = parameter(tokens);
 
 	if (check_token_type(tokens, TOKEN_COMMA))
@@ -1085,6 +1213,8 @@ ast_node_o *parameter_list(array_o *tokens)
 
 ast_node_o *member_declaration(array_o *tokens)
 {
+	// printf("member_declaration\n");
+
 	ast_node_o *node = new_ast_node(NODE_FUNCTION_DEC);
 
 	node->function_dec.identifier = identifier(tokens);
@@ -1106,6 +1236,8 @@ ast_node_o *member_declaration(array_o *tokens)
 
 ast_node_o *struct_body(array_o *tokens)
 {
+	// printf("struct_body\n");
+
 	ast_node_o *node = NULL;
 	token_o *next = array_at(tokens, tokens->index + 1);
 	while (!check_token_type(tokens, TOKEN_RBRACE))
@@ -1128,6 +1260,8 @@ ast_node_o *struct_body(array_o *tokens)
 
 ast_node_o *struct_statement(array_o *tokens)
 {
+	// printf("struct_statement\n");
+
 	eat_token(tokens, "struct");
 	ast_node_o *node = new_ast_node(NODE_STRUCT);
 	node->struct_statement.identifier = identifier(tokens);
@@ -1140,6 +1274,8 @@ ast_node_o *struct_statement(array_o *tokens)
 
 ast_node_o *statement(array_o *tokens)
 {
+	// printf("statement\n");
+
 	if (check_token_value(tokens, "{"))
 	{
 		return block_statement(tokens);
@@ -1195,6 +1331,8 @@ ast_node_o *statement(array_o *tokens)
 
 ast_node_o *function_expression(array_o *tokens)
 {
+	// printf("function_expression\n");
+
 	ast_node_o *node = new_ast_node(NODE_FUNCTION_DEC);
 
 	eat_token(tokens, "fun");
@@ -1221,6 +1359,7 @@ ast_node_o *function_expression(array_o *tokens)
 
 ast_node_o *function_declaration(array_o *tokens)
 {
+	// printf("function_declaration\n");
 	ast_node_o *node = new_ast_node(NODE_FUNCTION_DEC);
 
 	eat_token(tokens, "fun");
@@ -1244,16 +1383,24 @@ ast_node_o *function_declaration(array_o *tokens)
 
 ast_node_o *source_element(array_o *tokens)
 {
+	// printf("source_element\n");
+
 	if (check_token_value(tokens, "fun"))
 	{
 		return function_declaration(tokens);
 	}
+	else
+	{
+		return statement(tokens);
+	}
 
-	return statement(tokens);
+	return NULL;
 }
 
 ast_node_o *source_elements(array_o *tokens)
 {
+	// printf("source_elements\n");
+
 	ast_node_o *node = source_element(tokens);
 
 	while (!check_token_type(tokens, TOKEN_EOL))
@@ -1268,19 +1415,21 @@ ast_node_o *source_elements(array_o *tokens)
 		ast_node_push(&node, next);
 	}
 
+	// printf("source_elements end: %d\n", node->node_type);
+
 	return node;
 }
 
 ast_node_o *orca_parse2(array_o *tokens)
 {
+	// printf("orca_parse2\n");
 	if (tokens == NULL)
 	{
 		return NULL;
 	}
 
-	ast_node_o *program = new_ast_node(NODE_SUPER_STATEMENT);
-	program->super_statement.statement = source_elements(tokens);
-	program->super_statement.type = STATEMENT_PROGRAM;
+	ast_node_o *root = new_ast_node(NODE_PROGRAM);
+	root->program.sources = source_elements(tokens);
 
-	return program;
+	return root;
 }

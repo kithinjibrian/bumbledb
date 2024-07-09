@@ -210,7 +210,7 @@
 											| <expression> "," <assignment_expression>
 
 <assignment_expression>					::= <conditional_expression>
-											| <left_hand_expression> <assignment_operator> <assignment_expression>
+											| <unary_expression> <assignment_operator> <assignment_expression>
 
 <assignment_operator>					::= ":=" | "+=" | "-=" | "*=" | "/=" | "%="
 
@@ -338,7 +338,7 @@ htable_o *eval(string_o *prog)
 	// print(array_join(c, ""));
 
 	htable_o *result = NULL;
-	result = orca_evaluate(ast);
+	// result = orca_evaluate(ast);
 
 	return result;
 }

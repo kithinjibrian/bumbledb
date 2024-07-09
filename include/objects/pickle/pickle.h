@@ -77,12 +77,14 @@ typedef enum
 	NODE_NULL,
 	NODE_ARRAY,
 	NODE_BREAK,
+	NODE_BLOCK,
 	NODE_OBJECT,
 	NODE_STRING,
 	NODE_NUMBER,
 	NODE_RETURN,
 	NODE_IMPORT,
 	NODE_STRUCT,
+	NODE_PROGRAM,
 	NODE_VARIABLE,
 	NODE_CONTINUE,
 	NODE_KEY_VALUE,
@@ -94,6 +96,7 @@ typedef enum
 	NODE_METHOD_CALL,
 	NODE_POSTFIX_INC,
 	NODE_DEREFERENCE,
+	NODE_EXPRESSION,
 	NODE_NT_FUNCTION,
 	NODE_TERNARY_EXP,
 	NODE_FUNCTION_DEC,
@@ -112,9 +115,10 @@ typedef enum
 
 typedef enum
 {
-	LIST_ARGUMENT = 175,
+	LIST_ARGUMENT = 1000,
 	LIST_LEFT_HAND,
 	STATEMENT_BLOCK,
+	SOURCE_ELEMENTS,
 	STATEMENT_PROGRAM,
 	STATEMENT_VARIABLE,
 	STATEMENT_EXPRESSION,
@@ -142,6 +146,14 @@ typedef struct ast_node_o
 			struct ast_node_o *key;
 			struct ast_node_o *value;
 		} key_value;
+		struct
+		{
+			struct ast_node_o *sources;
+		} program;
+		struct
+		{
+			struct ast_node_o *stmts;
+		} block_statement;
 		struct
 		{
 			statement_type_e type;
@@ -208,6 +220,16 @@ typedef struct ast_node_o
 			struct ast_node_o *arguments;
 			struct ast_node_o *identifier;
 		} nt_function_call;
+		struct
+		{
+			struct ast_node_o *child;
+			struct ast_node_o *parent;
+		} field_access;
+		struct
+		{
+			struct ast_node_o *parent;
+			struct ast_node_o *expression;
+		} array_access;
 		struct
 		{
 			struct ast_node_o *operand;

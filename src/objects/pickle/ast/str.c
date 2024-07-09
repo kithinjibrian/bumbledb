@@ -29,16 +29,34 @@ object_o s_key_value(ast_node_o *ast_node)
 
 object_o s_super_elements(ast_node_o *ast_node)
 {
-	ast_node_o *current = ast_node->super_statement.statement;
+	ast_node_o *current = ast_node;
+
 	SMART array_o *arr = new_array(0);
+
+	while (current)
+	{
+		array_push(arr, ast_node_str(ast_node->super_statement.statement));
+		current = current->next;
+	}
+
+	string_o *joined = array_join(arr, ", ");
+	return joined;
+}
+
+object_o s_block_statements(ast_node_o *ast_node)
+{
+	ast_node_o *current = ast_node->block_statement.stmts;
+
+	SMART array_o *arr = new_array(0);
+
 	while (current)
 	{
 		array_push(arr, ast_node_str(current));
 		current = current->next;
 	}
 
-	string_o *joined = array_join(arr, ", ");
-	return joined;
+	SMART string_o *joined = array_join(arr, ", ");
+	return string_format("{ %q }", joined);
 }
 
 object_o s_object(ast_node_o *ast_node)
@@ -80,13 +98,35 @@ object_o s_list(ast_node_o *ast_node)
 	return string_format("(%q)", joined);
 }
 
+object_o s_program(ast_node_o *ast_node)
+{
+	ast_node_o *current = ast_node->program.sources;
+	SMART array_o *arr = new_array(0);
+	while (current)
+	{
+		array_push(arr, ast_node_str(current));
+		current = current->next;
+	}
+	SMART string_o *joined = array_join(arr, ", ");
+	return string_format("\nprogram!!\n%q\n", joined);
+}
+
 object_o s_binary_exp(ast_node_o *ast_node)
 {
-	SMART object_o left = ast_node_str(ast_node->binary_exp.left);
+	SMART ast_node_o *left = ast_node->binary_exp.left;
+	SMART array_o *arr = new_array(0);
+	while (left)
+	{
+		array_push(arr, ast_node_str(left));
+		left = left->next;
+	}
+
+	SMART string_o *joined = array_join(arr, ".");
+
 	SMART object_o right = ast_node_str(ast_node->binary_exp.right);
 	SMART string_o *op = string_from("%d", ast_node->binary_exp.token_type);
 
-	return string_format("%q <%q> %q", left, op, right);
+	return string_format("%q <%q> %q", joined, op, right);
 }
 
 object_o s_parameter_dec(ast_node_o *ast_node)
@@ -196,6 +236,7 @@ object_o s_nt_function_call(ast_node_o *ast_node)
 
 	while (arguments)
 	{
+		print(arguments);
 		array_push(arr, ast_node_str(arguments));
 		arguments = arguments->next;
 	}
@@ -208,6 +249,13 @@ object_o s_nt_function_call(ast_node_o *ast_node)
 object_o s_unary_exp(ast_node_o *ast_node)
 {
 	SMART object_o iden = ast_node_str(ast_node->unary_exp.operand);
+	if (ast_node->unary_exp.operand->next)
+	{
+		SMART object_o post = ast_node_str(ast_node->unary_exp.operand->next);
+		object_o s = string_format("%q(%q)", iden, post);
+		DROP(iden);
+		iden = s;
+	}
 	return string_format("<unary>%q", iden);
 }
 
@@ -275,6 +323,20 @@ object_o s_struct_instance(ast_node_o *ast_node)
 	return string_format("%q {%q}", ast_node->struct_instance.identifier, joined);
 }
 
+object_o s_field_access(ast_node_o *ast_node)
+{
+	SMART object_o parent = ast_node_str(ast_node->field_access.parent);
+	SMART object_o child = ast_node_str(ast_node->field_access.child);
+	return string_format("%q.%q", parent, child);
+}
+
+object_o s_array_access(ast_node_o *ast_node)
+{
+	SMART object_o parent = ast_node_str(ast_node->array_access.parent);
+	SMART object_o exp = ast_node_str(ast_node->array_access.expression);
+	return string_format("%q[%q]", parent, exp);
+}
+
 static htable_o *s_table_g = NULL;
 
 object_o ast_str(ast_node_o *ast_node)
@@ -293,6 +355,7 @@ object_o ast_str(ast_node_o *ast_node)
 		htable_set(s_table_g, number(NODE_STRUCT), function("struct", (fun_generic_t)s_struct));
 		htable_set(s_table_g, number(NODE_STRING), function("string", (fun_generic_t)s_string));
 		htable_set(s_table_g, number(NODE_OBJECT), function("object", (fun_generic_t)s_object));
+		htable_set(s_table_g, number(NODE_PROGRAM), function("program", (fun_generic_t)s_program));
 		htable_set(s_table_g, number(NODE_KEY_VALUE), function("number", (fun_generic_t)s_key_value));
 		htable_set(s_table_g, number(NODE_CONTINUE), function("continue", (fun_generic_t)s_continue));
 		htable_set(s_table_g, number(NODE_IMPORT), function("import_smt", (fun_generic_t)s_import_smt));
@@ -302,12 +365,15 @@ object_o ast_str(ast_node_o *ast_node)
 		htable_set(s_table_g, number(NODE_BINARY_EXP), function("binary_exp", (fun_generic_t)s_binary_exp));
 		htable_set(s_table_g, number(NODE_VARIABLE), function("variable_dec", (fun_generic_t)s_variable_dec));
 		htable_set(s_table_g, number(NODE_DEREFERENCE), function("dereference", (fun_generic_t)s_dereference));
+		htable_set(s_table_g, number(NODE_FIELD_ACCESS), function("field access", (fun_generic_t)s_field_access));
+		htable_set(s_table_g, number(NODE_ARRAY_ACCESS), function("array access", (fun_generic_t)s_array_access));
 		htable_set(s_table_g, number(NODE_TERNARY_EXP), function("if_statement", (fun_generic_t)s_if_statement));
 		htable_set(s_table_g, number(NODE_FUNCTION_DEC), function("function_dec", (fun_generic_t)s_function_dec));
 		htable_set(s_table_g, number(NODE_FUNCTION_CALL), function("function_call", (fun_generic_t)s_function_call));
 		htable_set(s_table_g, number(NODE_FOR_STATEMENT), function("for_statement", (fun_generic_t)s_for_statement));
 		htable_set(s_table_g, number(NODE_PARAMETER_DEC), function("parameter_dec", (fun_generic_t)s_parameter_dec));
 		htable_set(s_table_g, number(NODE_SUPER_STATEMENT), function("source_elements", (fun_generic_t)s_super_elements));
+		htable_set(s_table_g, number(NODE_BLOCK), function("block_statements", (fun_generic_t)s_block_statements));
 		htable_set(s_table_g, number(NODE_WHILE_STATEMENT), function("while_statement", (fun_generic_t)s_while_statement));
 		htable_set(s_table_g, number(NODE_NT_FUNCTION), function("nt_function_call", (fun_generic_t)s_nt_function_call));
 		htable_set(s_table_g, number(NODE_STRUCT_INSTANCE), function("struct_instance", (fun_generic_t)s_struct_instance));

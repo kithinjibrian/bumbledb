@@ -22,6 +22,8 @@ ast_node_o *new_ast_node(node_type_e node_type)
 	ast_node->node_type = node_type;
 	ast_node->next = NULL;
 
+	printf("node_type: %d\n", node_type);
+
 	switch (node_type)
 	{
 	case NODE_NUMBER:
@@ -133,6 +135,24 @@ ast_node_o *new_ast_node(node_type_e node_type)
 	case NODE_STRUCT_INSTANCE:
 		ast_node->struct_instance.fields = NULL;
 		ast_node->struct_instance.identifier = NULL;
+		break;
+
+	case NODE_FIELD_ACCESS:
+		ast_node->field_access.parent = NULL;
+		ast_node->field_access.child = NULL;
+		break;
+
+	case NODE_ARRAY_ACCESS:
+		ast_node->array_access.parent = NULL;
+		ast_node->array_access.expression = NULL;
+		break;
+
+	case NODE_BLOCK:
+		ast_node->block_statement.stmts = NULL;
+		break;
+
+	case NODE_PROGRAM:
+		ast_node->program.sources = NULL;
 		break;
 
 	default:
