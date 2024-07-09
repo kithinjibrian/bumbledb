@@ -2,7 +2,7 @@
 
 object_o add(object_o a, object_o b)
 {
-
+	
 	object_header_t *object_header = get_object_header(a);
 
 	if (object_header->vtable && object_header->vtable->__add__)

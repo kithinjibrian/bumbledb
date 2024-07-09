@@ -7,6 +7,7 @@
 
 #include "objects/pool/pool.h"
 #include "objects/pool/alloc.h"
+#include "objects/natives/strings.h"
 
 uint8_t *new_bytes(int length);
 uint8_t *bytes_from(void *buffer, int length);

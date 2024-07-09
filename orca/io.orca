@@ -1,0 +1,28 @@
+fun print(data) {
+   print!(data);
+}
+
+fun open(path, mode) {
+   return open!(path, mode);
+}
+
+fun read(file) {
+   return read!(file);
+}
+
+fun write(file, data) {
+   write!(file, str!(data));
+}
+
+fun seek(file, position, whence := 0) {
+	seek!(file, position, whence);
+}
+
+export := map{
+	"package": "io",
+	"print": print,
+	"open": open,
+	"read": read,
+	"write": write,
+	"seek": seek
+};

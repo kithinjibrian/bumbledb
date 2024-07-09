@@ -35,7 +35,7 @@ object_o list_str(object_o object)
 		node = node->next;
 	}
 
-	return string_format("(%q)", cnt);
+	return string_format("->(%q)", cnt);
 }
 
 list_node_o *new_list_node(object_o object)

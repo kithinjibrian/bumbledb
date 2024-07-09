@@ -6,5 +6,6 @@
 #include "objects/natives/error.h"
 
 bool equal(object_o a, object_o b);
+object_o is_not_equal(object_o a, object_o b);
 
 #endif

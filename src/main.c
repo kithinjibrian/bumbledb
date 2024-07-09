@@ -8,7 +8,9 @@ int main()
 		SMART htable_o *global = orca(string_from("hello.orca"));
 	}
 	drop_globals();
+	drop_ast_table();
 	object_info_all();
+	pool_clean();
 	return 0;
 }
 

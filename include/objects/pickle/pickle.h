@@ -25,6 +25,8 @@ typedef struct lexer_o
 typedef enum
 {
 	TOKEN_EOL,
+	TOKEN_OR,
+	TOKEN_AND,
 	TOKEN_DOT,
 	TOKEN_WORD,
 	TOKEN_PIPE,
@@ -32,6 +34,7 @@ typedef enum
 	TOKEN_MULT,
 	TOKEN_COMMA,
 	TOKEN_COLON,
+	TOKEN_CARET,
 	TOKEN_LESSER,
 	TOKEN_MINUS,
 	TOKEN_DIVIDE,
@@ -44,11 +47,18 @@ typedef enum
 	TOKEN_RPAREN,
 	TOKEN_STRING,
 	TOKEN_GREATER,
+	TOKEN_COMMENT,
 	TOKEN_LBRACKET,
 	TOKEN_RBRACKET,
 	TOKEN_IS_EQUAL,
+	TOKEN_QUESTION,
+	TOKEN_AMPERSAND,
 	TOKEN_SEMICOLON,
 	TOKEN_UNDERSCORE,
+	TOKEN_EXCLAMATION,
+	TOKEN_IS_NOT_EQUAL,
+	TOKEN_LESSER_OR_EQUAL,
+	TOKEN_GREATER_OR_EQUAL,
 } token_type_e;
 
 typedef struct token_o
@@ -64,6 +74,7 @@ typedef enum
 	NODE_PAIR,
 	NODE_LIST,
 	NODE_WORD,
+	NODE_NULL,
 	NODE_ARRAY,
 	NODE_BREAK,
 	NODE_OBJECT,
@@ -71,14 +82,20 @@ typedef enum
 	NODE_NUMBER,
 	NODE_RETURN,
 	NODE_IMPORT,
+	NODE_STRUCT,
+	NODE_VARIABLE,
 	NODE_CONTINUE,
 	NODE_KEY_VALUE,
 	NODE_ARGUMENTS,
+	NODE_REFERENCE,
+	NODE_UNARY_EXP,
 	NODE_BINARY_EXP,
 	NODE_STATEMENTS,
 	NODE_METHOD_CALL,
 	NODE_POSTFIX_INC,
-	NODE_VARIABLE_DEC,
+	NODE_DEREFERENCE,
+	NODE_NT_FUNCTION,
+	NODE_TERNARY_EXP,
 	NODE_FUNCTION_DEC,
 	NODE_ARRAY_ACCESS,
 	NODE_FIELD_ACCESS,
@@ -88,7 +105,20 @@ typedef enum
 	NODE_FOR_STATEMENT,
 	NODE_COM_STATEMENTS,
 	NODE_WHILE_STATEMENT,
+	NODE_SOURCE_ELEMENTS,
+	NODE_SUPER_STATEMENT,
+	NODE_STRUCT_INSTANCE,
 } node_type_e;
+
+typedef enum
+{
+	LIST_ARGUMENT = 175,
+	LIST_LEFT_HAND,
+	STATEMENT_BLOCK,
+	STATEMENT_PROGRAM,
+	STATEMENT_VARIABLE,
+	STATEMENT_EXPRESSION,
+} statement_type_e;
 
 typedef struct ast_node_o
 {
@@ -114,6 +144,11 @@ typedef struct ast_node_o
 		} key_value;
 		struct
 		{
+			statement_type_e type;
+			struct ast_node_o *statement;
+		} super_statement;
+		struct
+		{
 			struct ast_node_o *path;
 		} import_smt;
 		struct
@@ -122,22 +157,14 @@ typedef struct ast_node_o
 		} return_smt;
 		struct
 		{
+			struct ast_node_o *body;
 			struct ast_node_o *identifier;
-		} postfix_inc;
+		} struct_statement;
 		struct
 		{
-			struct ast_node_o *list;
-		} statements;
-		struct
-		{
-			struct ast_node_o *list;
-		} compound_statements;
-		struct
-		{
-			struct ast_node_o *condition;
-			struct ast_node_o *if_body;
-			struct ast_node_o *else_body;
-		} if_statement;
+			struct ast_node_o *identifier;
+			struct ast_node_o *fields;
+		} struct_instance;
 		struct
 		{
 			struct ast_node_o *body;
@@ -152,30 +179,11 @@ typedef struct ast_node_o
 		} for_statement;
 		struct
 		{
-			struct ast_node_o *args;
-		} arguments;
-		struct
-		{
-			struct ast_node_o *identifier;
-			struct ast_node_o *index_exp;
-		} array_access;
-		struct
-		{
-			struct ast_node_o *object;
-			struct ast_node_o *identifier;
-		} field_access;
-		struct
-		{
-			struct ast_node_o *value;
-			struct ast_node_o *index_exp;
-			struct ast_node_o *identifier;
-		} array_assign;
-		struct
-		{
+			object_o value;
 			struct ast_node_o *type;
 			struct ast_node_o *identifier;
 			struct ast_node_o *initializer;
-		} variable_dec;
+		} variable;
 		struct
 		{
 			struct ast_node_o *type;
@@ -193,19 +201,30 @@ typedef struct ast_node_o
 		{
 			struct ast_node_o *arguments;
 			struct ast_node_o *identifier;
+			struct ast_node_o *call_exp;
 		} function_call;
 		struct
 		{
-			struct ast_node_o *object;
 			struct ast_node_o *arguments;
 			struct ast_node_o *identifier;
-		} method_call;
+		} nt_function_call;
+		struct
+		{
+			struct ast_node_o *operand;
+		} unary_exp;
 		struct
 		{
 			token_type_e token_type;
 			struct ast_node_o *right;
 			struct ast_node_o *left;
 		} binary_exp;
+		struct
+		{
+			int type;
+			struct ast_node_o *condition;
+			struct ast_node_o *if_body;
+			struct ast_node_o *else_body;
+		} ternary_exp;
 
 		long *number;
 		string_o *word;
@@ -213,6 +232,9 @@ typedef struct ast_node_o
 	};
 	struct ast_node_o *next;
 } ast_node_o;
+
+typedef object_o (*fun_ast_str)(ast_node_o *);
+typedef void (*fun_ast_visit)(ast_node_o *, fun_process_t);
 
 string_o *dump(object_o object);
 
@@ -239,7 +261,11 @@ object_o evaluate(ast_node_o *ast_node);
 /*
 ast
 */
+void drop_ast_table();
+object_o ast_node_str(object_o object);
+object_o ast_str(ast_node_o *ast_node);
 ast_node_o *new_ast_node(node_type_e node_type);
 void ast_node_push(ast_node_o **root_node, ast_node_o *node);
+void ast_visit(ast_node_o *ast_node, fun_process_t fun_process);
 
 #endif

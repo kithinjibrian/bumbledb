@@ -17,7 +17,7 @@ ast_node_o *parse_keyvalue(array_o *tokens);
 <key>       ::= <string> | <number>
 <object>	::= "{" <values> "}"
 <array>		::= "[" <values> "]"
-<list>		::= "(" <values> ")"
+<list>		::= "->(" <values> ")"
 <values>	::= <value> | <value> "," <values>
 */
 
@@ -181,9 +181,16 @@ ast_node_o *parse_value(array_o *tokens)
 			ast_node = parse_array(tokens);
 			break;
 
-		case TOKEN_LPAREN:
-			ast_node = parse_list(tokens);
+		case TOKEN_MINUS:
+		{
+			token_o *next = array_at(tokens, tokens->index + 1);
+			token_o *next_next = array_at(tokens, tokens->index + 2);
+			if (next->token_type == TOKEN_GREATER && next_next->token_type == TOKEN_LPAREN)
+			{
+				ast_node = parse_list(tokens);
+			}
 			break;
+		}
 
 		default:
 			ast_node = error("Expected a value!", SILENT);

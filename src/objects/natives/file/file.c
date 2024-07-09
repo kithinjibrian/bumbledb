@@ -1,10 +1,5 @@
 #include "objects/natives/file.h"
 
-struct file_o
-{
-	FILE *file;
-};
-
 void deinit_file(object_o object)
 {
 	file_o *file = (file_o *)object;
@@ -25,6 +20,10 @@ file_o *f_open(const char *filename, const char *modes)
 
 	if ((file_obj->file = fopen(filename, modes)))
 	{
+		fseek(file_obj->file, 0, SEEK_END);
+		file_obj->size = ftell(file_obj->file);
+		fseek(file_obj->file, 0, SEEK_SET);
+
 		RETURN(file_obj);
 	}
 

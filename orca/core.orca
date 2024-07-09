@@ -1,0 +1,8 @@
+fun release(object) {
+	release!(object);
+}
+
+export := map {
+	"package": "core",
+	"release": release
+};

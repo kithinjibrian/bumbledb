@@ -1,0 +1,8 @@
+fun load(object) {
+	return load!(object);
+}
+
+export := {
+	"package": "sraso",
+	"load": load
+};

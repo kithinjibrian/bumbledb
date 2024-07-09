@@ -1,5 +1,5 @@
 #include "orca/orca.h"
-
+/*
 ast_node_o *orca_parse_key(array_o *tokens);
 ast_node_o *orca_parse_word(array_o *tokens);
 ast_node_o *orca_parse_number(array_o *tokens);
@@ -9,6 +9,7 @@ ast_node_o *orca_parse_unary_exp(array_o *tokens);
 ast_node_o *orca_parse_statement(array_o *tokens);
 ast_node_o *orca_parse_parameter(array_o *tokens);
 ast_node_o *orca_parse_key_value(array_o *tokens);
+ast_node_o *orca_parse_expression(array_o *tokens);
 ast_node_o *orca_parse_method_call(array_o *tokens);
 ast_node_o *orca_parse_primary_exp(array_o *tokens);
 ast_node_o *orca_parse_postfix_exp(array_o *tokens);
@@ -46,7 +47,7 @@ bool match_type(array_o *tokens, token_type_e type)
 		array_next(tokens);
 		return true;
 	}
-	SMART string_o *err = string_format("Unexpected token: %q", ((token_o *)array_current(tokens))->token);
+	SMART string_o *err = string_from("Expected token: %d", type);
 	error(cstring(err), PRINT | PANIC);
 	return false;
 }
@@ -92,6 +93,9 @@ ast_node_o *orca_parse(array_o *tokens)
 {
 	ast_node_o *node = new_ast_node(NODE_STATEMENTS);
 	node->statements.list = orca_parse_statement_list(tokens);
+
+	// printf("%d\n", node->statements.list->node_type);
+
 	// print(array_current(tokens));
 	return node;
 }
@@ -115,6 +119,7 @@ ast_node_o *orca_parse_statement_list(array_o *tokens)
 
 ast_node_o *orca_parse_statement(array_o *tokens)
 {
+
 	if (nmatch(tokens, "let"))
 	{
 		return orca_parse_variable_dec(tokens);
@@ -174,12 +179,25 @@ ast_node_o *orca_parse_statement(array_o *tokens)
 
 ast_node_o *orca_parse_expression_statement(array_o *tokens)
 {
+	ast_node_o *node = orca_parse_expression(tokens);
 
-	ast_node_o *node = orca_parse_assignment_expression(tokens);
-
-	if (token_get_type(array_current(tokens)) == TOKEN_SEMICOLON)
+	if (nmatch_type(tokens, TOKEN_SEMICOLON))
 	{
 		array_next(tokens);
+	}
+
+	return node;
+}
+
+ast_node_o *orca_parse_expression(array_o *tokens)
+{
+	ast_node_o *node = orca_parse_assignment_expression(tokens);
+
+	if (nmatch_type(tokens, TOKEN_COMMA))
+	{
+		array_next(tokens);
+		ast_node_o *next = orca_parse_assignment_expression(tokens);
+		ast_node_push(&node, next);
 	}
 
 	return node;
@@ -208,13 +226,15 @@ ast_node_o *orca_parse_compound_statement(array_o *tokens)
 {
 	ast_node_o *node = NULL;
 
-	array_next(tokens);
+	match_type(tokens, TOKEN_LBRACE);
+
 	if (token_get_type(array_current(tokens)) != TOKEN_RBRACE)
 	{
 		node = new_ast_node(NODE_COM_STATEMENTS);
 		node->compound_statements.list = orca_parse_statement_list(tokens);
 	}
-	array_next(tokens);
+
+	match_type(tokens, TOKEN_RBRACE);
 
 	return node;
 }
@@ -332,7 +352,7 @@ ast_node_o *orca_parse_parameter(array_o *tokens)
 
 ast_node_o *orca_parse_variable_dec(array_o *tokens)
 {
-	ast_node_o *variable = new_ast_node(NODE_VARIABLE_DEC);
+	ast_node_o *variable = new_ast_node(NODE_VARIABLE);
 	array_next(tokens);
 	variable->variable_dec.identifier = orca_parse_word(tokens);
 	variable->variable_dec.type = orca_parse_type_annotation_opt(tokens);
@@ -343,13 +363,7 @@ ast_node_o *orca_parse_variable_dec(array_o *tokens)
 		variable->variable_dec.initializer = orca_parse_equality_exp(tokens);
 	}
 
-	if (token_get_type(array_current(tokens)) != TOKEN_SEMICOLON)
-	{
-		DROP(variable);
-		return error("Expected ';'", PRINT | PANIC);
-	}
-
-	array_next(tokens);
+	match_type(tokens, TOKEN_SEMICOLON);
 
 	return variable;
 }
@@ -468,6 +482,7 @@ ast_node_o *orca_parse_additive_exp(array_o *tokens)
 ast_node_o *orca_parse_multiplicative_exp(array_o *tokens)
 {
 	ast_node_o *left = orca_parse_unary_exp(tokens);
+
 	token_o *current = array_current(tokens);
 
 	while (current && (current->token_type == TOKEN_MULT ||
@@ -503,22 +518,74 @@ ast_node_o *orca_parse_postfix_exp(array_o *tokens)
 {
 	ast_node_o *node = orca_parse_primary_exp(tokens);
 
-	if (nmatch_type(tokens, TOKEN_PLUS))
+	while (1)
 	{
-		array_next(tokens);
 		if (nmatch_type(tokens, TOKEN_PLUS))
 		{
 			array_next(tokens);
-			ast_node_o *exp = new_ast_node(NODE_POSTFIX_INC);
-			exp->postfix_inc.identifier = node;
-			return exp;
+			if (nmatch_type(tokens, TOKEN_PLUS))
+			{
+				array_next(tokens);
+				ast_node_o *exp = new_ast_node(NODE_POSTFIX_INC);
+				exp->postfix_inc.identifier = node;
+				node = exp;
+			}
+			else
+			{
+				array_prev(tokens);
+				break;
+			}
+		}
+		else if (nmatch_type(tokens, TOKEN_LBRACKET))
+		{
+			ast_node_o *array_access = new_ast_node(NODE_ARRAY_ACCESS);
+			array_access->array_access.identifier = node;
+
+			array_next(tokens);
+			array_access->array_access.index_exp = orca_parse_expression(tokens);
+			array_next(tokens);
+
+			node = array_access;
+		}
+		else if (nmatch_type(tokens, TOKEN_LPAREN))
+		{
+			ast_node_o *fun_call = new_ast_node(NODE_FUNCTION_CALL);
+			fun_call->function_call.identifier = node;
+
+			array_next(tokens);
+			fun_call->function_call.arguments = orca_parse_expression(tokens);
+			array_next(tokens);
+
+			node = fun_call;
+		}
+		else if (nmatch_type(tokens, TOKEN_EXCLAMATION))
+		{
+			array_next(tokens);
+
+			ast_node_o *nt_fun_call = new_ast_node(NODE_NT_FUNCTION);
+			nt_fun_call->nt_function_call.identifier = node;
+
+			array_next(tokens);
+			nt_fun_call->function_call.arguments = orca_parse_expression(tokens);
+			array_next(tokens);
+
+			node = nt_fun_call;
+		}
+		else if (nmatch_type(tokens, TOKEN_DOT))
+		{
+			ast_node_o *fa = new_ast_node(NODE_FIELD_ACCESS);
+			fa->field_access.object = node;
+
+			array_next(tokens);
+			fa->field_access.identifier = orca_parse_word(tokens);
+
+			node = fa;
+		}
+		else
+		{
+			break;
 		}
 	}
-	else if (nmatch_type(tokens, TOKEN_LBRACKET))
-	{
-		printf("array access ");
-	}
-
 	return node;
 }
 
@@ -566,7 +633,7 @@ ast_node_o *orca_parse_function_call(array_o *tokens)
 	ast_node->function_call.identifier = orca_parse_word(tokens);
 
 	array_next(tokens);
-	ast_node->function_call.arguments = orca_parse_argument_list_opt(tokens);
+	ast_node->function_call.arguments = orca_parse_assignment_expression(tokens);
 	array_next(tokens);
 
 	return ast_node;
@@ -599,7 +666,7 @@ ast_node_o *orca_parse_argument_list_opt(array_o *tokens)
 
 ast_node_o *orca_parse_argument_list(array_o *tokens)
 {
-	ast_node_o *ast_node = orca_parse_equality_exp(tokens);
+	ast_node_o *ast_node = orca_parse_assignment_expression(tokens);
 
 	if (token_get_type(array_current(tokens)) == TOKEN_COMMA)
 	{
@@ -769,4 +836,4 @@ ast_node_o *orca_parse_number(array_o *tokens)
 	array_next(tokens);
 
 	return ast_node;
-}
+}*/

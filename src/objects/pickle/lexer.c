@@ -81,6 +81,11 @@ token_o *tokenize(lexer_o *lexer)
 		lcolumn(lexer);
 		return new_token(TOKEN_EOL, string_from("<<EOL>>"), lexer->line, lexer->column);
 	};
+	case '!':
+	{
+		lcolumn(lexer);
+		return new_token(TOKEN_EXCLAMATION, string_from("!"), lexer->line, lexer->column);
+	};
 	case '.':
 	{
 		lcolumn(lexer);
@@ -194,10 +199,46 @@ token_o *tokenize(lexer_o *lexer)
 	case '/':
 	{
 		lcolumn(lexer);
-		return new_token(TOKEN_DIVIDE,
-						 string_slice(lexer->input, index_start, index_start + 1),
-						 lexer->line,
-						 lexer->column);
+		if (string_at(lexer->input, index_start + 1) == '/')
+		{
+			lnext(lexer);
+			lnext(lexer);
+
+			while (!string_at_end(lexer->input) && lchar(lexer) != '\n')
+			{
+				lnext(lexer);
+			}
+
+			return new_token(TOKEN_COMMENT, string_from("<<COMMENT>>"), lexer->line, lexer->column);
+		}
+		else if (string_at(lexer->input, lexer->input->index + 1) == '*')
+		{
+
+			lnext(lexer);
+			lnext(lexer);
+
+			while (!string_at_end(lexer->input))
+			{
+				if (lchar(lexer) == '*' && string_at(lexer->input, lexer->input->index + 1) == '/')
+				{
+					lnext(lexer);
+					lnext(lexer);
+					break;
+				}
+				lnext(lexer);
+			}
+
+			return new_token(TOKEN_COMMENT, string_from("<<COMMENT>>"), lexer->line, lexer->column);
+		}
+		else
+		{
+			return new_token(TOKEN_DIVIDE,
+							 string_slice(lexer->input, index_start, index_start + 1),
+							 lexer->line,
+							 lexer->column);
+		}
+
+		break;
 	}
 	case '%':
 	{
@@ -223,18 +264,34 @@ token_o *tokenize(lexer_o *lexer)
 						 lexer->line,
 						 lexer->column);
 	}
-	case '_':
-	{
-		lcolumn(lexer);
-		return new_token(TOKEN_UNDERSCORE,
-						 string_slice(lexer->input, index_start, index_start + 1),
-						 lexer->line,
-						 lexer->column);
-	}
 	case '|':
 	{
 		lcolumn(lexer);
 		return new_token(TOKEN_PIPE,
+						 string_slice(lexer->input, index_start, index_start + 1),
+						 lexer->line,
+						 lexer->column);
+	}
+	case '&':
+	{
+		lcolumn(lexer);
+		return new_token(TOKEN_AMPERSAND,
+						 string_slice(lexer->input, index_start, index_start + 1),
+						 lexer->line,
+						 lexer->column);
+	}
+	case '^':
+	{
+		lcolumn(lexer);
+		return new_token(TOKEN_CARET,
+						 string_slice(lexer->input, index_start, index_start + 1),
+						 lexer->line,
+						 lexer->column);
+	}
+	case '?':
+	{
+		lcolumn(lexer);
+		return new_token(TOKEN_QUESTION,
 						 string_slice(lexer->input, index_start, index_start + 1),
 						 lexer->line,
 						 lexer->column);
@@ -284,11 +341,13 @@ token_o *tokenize(lexer_o *lexer)
 						 lexer->line, col);
 	}
 
-	if (isalpha(c))
+	if (isalpha(c) || c == '_')
 	{
 		int col = lcolumn(lexer);
 
-		while (isalpha(string_at(lexer->input, lindex(lexer) + 1)))
+		while (isalpha(string_at(lexer->input, lindex(lexer) + 1)) ||
+			   string_at(lexer->input, lindex(lexer) + 1) == '_' ||
+			   isdigit(string_at(lexer->input, lindex(lexer) + 1)))
 		{
 			lnext(lexer);
 		}

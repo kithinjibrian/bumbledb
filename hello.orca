@@ -1,9 +1,10 @@
-import "other.orca";
-
-fun main(): void {
-	let b = [12, 13];
-
-	print(b[1]);
+fun main(a)
+{
+	print!(*a);
 }
 
-main();
+let a = 90;
+
+main(&a);
+
+print!(a);

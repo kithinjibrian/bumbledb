@@ -76,6 +76,9 @@ typedef object_o (*fun_modulo_t)(object_o, object_o);
 typedef object_o (*fun_lesser_t)(object_o, object_o);
 typedef object_o (*fun_greater_t)(object_o, object_o);
 typedef void (*fun_visitor_t)(object_o, fun_process_t);
+typedef object_o (*fun_is_not_equals_t)(object_o, object_o);
+typedef object_o (*fun_lesser_or_equals_t)(object_o, object_o);
+typedef object_o (*fun_greater_or_equals_t)(object_o, object_o);
 
 typedef struct vtable_t
 {
@@ -91,6 +94,9 @@ typedef struct vtable_t
 	fun_lesser_t __lesser__;
 	fun_greater_t __greater__;
 	fun_visitor_t __visitor__;
+	fun_is_not_equals_t __is_not_equals__;
+	fun_lesser_or_equals_t __lesser_or_equals__;
+	fun_greater_or_equals_t __greater_or_equals__;
 } vtable_t;
 
 typedef struct data_info_t

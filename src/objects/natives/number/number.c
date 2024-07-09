@@ -20,6 +20,13 @@ bool number_equal(object_o num1, object_o num2)
 	return a == b;
 }
 
+object_o number_is_not_equal(object_o num1, object_o num2)
+{
+	long a = (*(long *)num1);
+	long b = (*(long *)num2);
+	return (object_o)number(a != b);
+}
+
 object_o number_add(object_o num1, object_o num2)
 {
 	long a = (*(long *)num1);
@@ -62,11 +69,25 @@ object_o number_lesser(object_o num1, object_o num2)
 	return (object_o)number(a < b);
 }
 
+object_o number_lesser_or_equals(object_o num1, object_o num2)
+{
+	long a = (*(long *)num1);
+	long b = (*(long *)num2);
+	return (object_o)number(a <= b);
+}
+
 object_o number_greater(object_o num1, object_o num2)
 {
 	long a = (*(long *)num1);
 	long b = (*(long *)num2);
 	return (object_o)number(a > b);
+}
+
+object_o number_greater_or_equals(object_o num1, object_o num2)
+{
+	long a = (*(long *)num1);
+	long b = (*(long *)num2);
+	return (object_o)number(a >= b);
 }
 
 long *number(long num)
@@ -81,11 +102,14 @@ long *number(long num)
 		.__mult__ = number_mult,
 		.__minus__ = number_minus,
 		.__clone__ = number_clone,
+		.__equals__ = number_equal,
 		.__divide__ = number_divide,
 		.__modulo__ = number_modulo,
 		.__lesser__ = number_lesser,
 		.__greater__ = number_greater,
-		.__equals__ = number_equal};
+		.__is_not_equals__ = number_is_not_equal,
+		.__greater_or_equals__ = number_greater_or_equals,
+		.__lesser_or_equals__ = number_lesser_or_equals};
 
 	object_reg_dunders(n, &vt);
 

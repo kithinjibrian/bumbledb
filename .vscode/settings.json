@@ -1,5 +1,6 @@
 {
 	"files.associations": {
+		"*.orca": "plaintext",
 		"auth.h": "c",
 		"object.h": "c",
 		"main.h": "c",
@@ -47,6 +48,14 @@
 		"crypto.h": "c",
 		"orca.h": "c",
 		"add.h": "c",
-		"cmath": "c"
+		"cmath": "c",
+		"cstdlib": "c",
+		"compare": "c",
+		"lesser.h": "c",
+		"greater.h": "c",
+		"bit": "c",
+		"stdio.h": "c",
+		"null.h": "c",
+		"pointer.h": "c"
 	}
 }

@@ -1,7 +1,6 @@
 #include "orca/orca.h"
 
 /*
-
 <program> 						::= <statement_list>
 
 <statement_list> 				::= <statement> | <statement> <statement_list>
@@ -11,13 +10,15 @@
 									| <jump_statement>
 									| <selection-statement>
 									| <iteration-statement>
-									| <variable_declaration> ";"
-									| <function_declaration>
 									| <export_statement>
+									| <function_declaration>
+									| <variable_dec>
+									| <htable_desc>
 
 <expression_statement> 			::= <expression> ";"
 
 <expression> 					::= <assignment_expression>
+									| <expression> "," <assignment_expression>
 
 <assignment_expression> 		::=  <equality_expression>
 									| "=" <assignment_expression>
@@ -85,19 +86,16 @@
 									| <postfix_expression> "." <identifier>
 									| <postfix_expression> "[" <expression> "]"
 									| <postfix_expression> "(" <argument_list_opt> ")"
+									| <postfix_expression> "!" "(" <argument_list_opt> ")"
 									| <postfix_expression> ++
 
 <primary_expression>			::= <number>
 									| <string>
 									| ( <constant_expression> )
-									| <function_call>
-									| <method_call>
 									| <identifier>
 									| <array_literal>
-									| <object_literal>
+									| <htable_literal>
 									| <list_literal>
-									| <array_access>
-									| <field_access>
 
 
 <function_call>					::= <identifier> "(" <argument_list_opt> ")"
@@ -106,7 +104,7 @@
 
 <argument_list_opt>				::= "" | <argument_list>
 
-<argument_list>					::= <constant_expression> | <constant_expression> "," <argument_list>
+<argument_list>					::= <assignment_expression> | <assignment_expression> "," <argument_list>
 
 <array_literal>					::= "[" <array_elements_opt> "]"
 
@@ -122,7 +120,7 @@
 
 <field_access>					::= <identifier> "." <identifier>
 
-<object_literal>				::= "{" <key_value_list_opt> "}"
+<htable_literal>				::= "{" <key_value_list_opt> "}"
 
 <key_value_list_opt>			::= "" | <key_value_list>
 
@@ -133,11 +131,211 @@
 <key>							::= <identifier> | <string>
 */
 
-htable_o *__orca__(string_o *prog)
+/*
+<program>								::= ""
+											| <source_elements> <EOL>
+
+<source_elements>						::= <source_element>
+											| <source_element> <source_elements>
+
+<source_element>						::=  <statement>
+											| <function_expression>
+
+<function_expression> 					::= "fun" <identifier>? "(" <parameter_list_opt> ")" <type_annotation_opt> <function_body>
+
+<parameter_list_opt> 					::= ""
+											| <parameter_list>
+
+<parameter_list>						::= <parameter>
+											| <parameter> "," <parameter_list>
+
+<parameter>								::= <identifier> <type_annotation_opt>
+
+<primary_expression>					::= <identifier>
+											| <literal>
+											| "(" <expression> ")"
+											| <htable_literal>
+											| <list_literal>
+											| <array_literal>
+											| <native_function>
+
+<literal>								::= <number>
+											| <string>
+											| <boolean>
+											| <null>
+
+<htable_literal>						::= "map{" <key_value_list_opt> "}"
+
+<key_value_list_opt>					::= <key_value_list>
+											| ""
+
+<key_value_list>						::= <key_value>
+											| <key_value> "," <key_value_list>
+
+<key_value>								::= <key> ":" <assignment_expression>
+
+<key>									::= <string>
+											| <number>
+
+<list_literal>							::= "list{" <expression> "}"
+
+<array_literal>							::= "array{" <expression> "}"
+
+<native_function>						::= <identifier> "!" "(" <argument_list_opt> ")"
+
+<identifier>							::= <word>
+
+<statement>      						::= <block_statement>
+											| <expression_statement>
+											| <variable_statement>
+											| <if_statement>
+											| <iteration_statement>
+											| <continue_statement>
+											| <break_statement>
+											| <return_statement>
+											| <export_statement>
+											| <struct_declaration>
+
+<block_statement>          				::= "{" <statement_list_opt> "}"
+
+<statement_list_opt>					::= <statement_list>
+											| ""
+
+<statement_list> 						::= <statement>
+											| <statement> <statement_list>
+
+<expression_statement>					::= <expression> ";"
+
+<expression>							::= <assignment_expression>
+											| <expression> "," <assignment_expression>
+
+<assignment_expression>					::= <conditional_expression>
+											| <left_hand_expression> <assignment_operator> <assignment_expression>
+
+<assignment_operator>					::= ":=" | "+=" | "-=" | "*=" | "/=" | "%="
+
+<left_hand_expression>					::= <call_expression>
+											| <member_expression>
+
+<member_expression>						::= <function_or_primary_expression>
+											| <member_expression_part>
+											| <class_expression>
+
+<class_expression>						::= "new" <member_expression> <arguments>
+
+<function_or_primary_expression>		::= <function_expression>
+											| <primary_expression>
+
+<member_expression_part>				::= "[" <expression> "]"
+											| "." <identifier>
+
+<call_expression>						::= <member_expression> <arguments> <call_expression_part>
+
+<call_expression_part>					::= <arguments>
+											| "[" <arguments> "]"
+											| "." <identifier>
+
+<arguments>								::= "(" <argument_list_opt> ")"
+
+<argument_list_opt>						::= "" | <argument_list>
+
+<argument_list>							::= <assignment_expression>
+											| <assignment_expression> "," <argument_list>
+
+<conditional_expression>				::= <logical_or_expression>
+											| <logical_or_expression> "?" <assignment_expression> ":" <assignment_expression>
+
+<logical_or_expression>					::= <logical_and_expression>
+											| <logical_or_expression> "||" <logical_and_expression>
+
+<logical_and_expression>				::= <bitwise_or_expression>
+											| <logical_and_expression> "&&" <bitwise_or_expression>
+
+<bitwise_or_expression>					::= <bitwise_xor_expression>
+											| <bitwise_or_expression> "|" <bitwise_xor_expression>
+
+<bitwise_xor_expression>				::= <bitwise_and_expression>
+											| <bitwise_xor_expression> "^" <bitwise_and_expression>
+
+<bitwise_and_expression>				::= <equality_expression>
+											| <bitwise_and_expression> "&" <equality_expression>
+
+<equality_expression>					::= <relational_expression>
+											| <equality_expression> "==" <relational_expression>
+											| <equality_expression> "!=" <relational_expression>
+
+<relational_expression>					::= <shift_expression>
+											| <relational_expression> "<" <shift_expression>
+											| <relational_expression> ">" <shift_expression>
+											| <relational_expression> "<=" <shift_expression>
+											| <relational_expression> ">=" <shift_expression>
+											| <relational_expression> "in" <shift_expression>
+
+<shift_expression>						::= <additive_expression>
+											| <shift_expression> "<<" <additive_expression>
+											| <shift_expression> ">>" <additive_expression>
+
+<additive_expression>					::= <multiplicative_expression>
+											| <additive_expression> "+" <multiplicative_expression>
+											| <additive_expression> "-" <multiplicative_expression>
+
+<multiplicative_expression>				::= <unary_expression>
+											| <multiplicative_expression> "*" <unary_expression>
+											| <multiplicative_expression> "/" <unary_expression>
+											| <multiplicative_expression> "%" <unary_expression>
+
+<unary_expression>						::= <postfix_expression>
+											| "*" <postfix_expression>
+
+
+<postfix_expression>					::= <left_hand_expression>
+											| <left_hand_expression> "++"
+											| <left_hand_expression> "--"
+
+<variable_statement>					::= "let" <declaration_list> ";"
+
+<declaration_list>						::= <declaration>
+											| <declaration> "," <declaration_list>
+
+<declaration>							::= <identifier> <type_annotation_opt> <initializer_opt>
+
+<initializer_opt>						::= "" | "=" <assignment_expression>
+
+<if_statement>							::= "if" "(" <expression> ")" <statement>
+											| "if" "(" <expression> ")" <statement> "else" <statement>
+
+<iteration_statement>					::= "while" "(" <expression> ")" <statement>
+											| "for" "(" <variable_statement> ";" <expression>? ";" <expression>? ")" <statement>
+
+<continue_statement>					::= "continue" ";"
+
+<break_statement>						::= "break" ";"
+
+<return_statement>						::= "return" <expression>? ";"
+
+<export_statement>						::= "export" <htable_literal>
+
+<struct_declaration>					::= "struct" <identifier> "{" <struct_body> "}"
+
+<struct_body>							::= <field_declaration> <struct_body>
+											| <member_declaration> <struct_body>
+
+<field_declaration>						::= <declaration>
+
+<member_declaration>					::= <identifier> "(" <parameter_list_opt> ")" <type_annotation_opt> <function_body>
+*/
+
+htable_o *eval(string_o *prog)
 {
 	SMART array_o *tokens = lexer(prog);
-	SMART ast_node_o *ast = orca_parse(tokens);
+	SMART ast_node_o *ast = orca_parse2(tokens);
+
 	print(ast);
+
+	// SMART void *c = new_array(0);
+	// type_check(ast, c);
+
+	// print(array_join(c, ""));
 
 	htable_o *result = NULL;
 	result = orca_evaluate(ast);
@@ -164,5 +362,5 @@ htable_o *orca(string_o *filename)
 
 	string_o *str = string_from("%.*s", size, buffer);
 
-	return __orca__(str);
+	return eval(str);
 }

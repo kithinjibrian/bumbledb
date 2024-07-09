@@ -2,10 +2,7 @@
 
 object_o load(string_o *sraso)
 {
-	SMART string_o *smt_sraso = sraso;
-	SMART array_o *tokens = lexer(smt_sraso);
-
-	string_rewind(sraso);
+	SMART array_o *tokens = lexer(sraso);
 
 	if (is_error(tokens))
 	{

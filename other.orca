@@ -1,8 +1,0 @@
-fun main(): void {
-	print("Hello, orca!");
-}
-
-export = {
-	"name": "orca",
-	"b": main
-};

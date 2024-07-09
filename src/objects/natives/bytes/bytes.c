@@ -1,30 +1,39 @@
 #include "objects/natives/bytes.h"
 
-/*
-void bytes_print(object_o object, int depth)
+object_o byte_str(object_o object)
 {
-	uint8_t *bytes = (object_o)object;
-	printf(GREY "[%d]b\'", object_refcount(bytes));
-	for (int a = 0; a < object_count(bytes); a++)
+	uint8_t *bytes = (uint8_t *)object;
+
+	int len = 10 + 3 * object_count(object);
+
+	char *buffer = (char *)malloc(len);
+	char *ptr = buffer;
+
+	for (int a = 0; a < object_count(object); a++)
 	{
 		if (bytes[a] == 0)
 		{
-			printf("00");
+			ptr += sprintf(ptr, "00");
 		}
 		else
 		{
 			if (isprint(bytes[a]))
 			{
-				printf(GREEN "%c" GREY, bytes[a]);
+				ptr += sprintf(ptr, "%c", bytes[a]);
 			}
 			else
 			{
-				printf(GREEN "%02hhX" GREY, bytes[a]);
+				ptr += sprintf(ptr, "%02hhX", bytes[a]);
 			}
 		}
 	}
-	printf("\'" RESET);
-}*/
+
+	string_o *str = string_from("%.*s", len, buffer);
+
+	free(buffer);
+
+	return str;
+}
 
 uint8_t *bytes_from(void *buffer, int length)
 {
@@ -33,6 +42,12 @@ uint8_t *bytes_from(void *buffer, int length)
 	dest = alloc(length, sizeof(uint8_t), NT_BYTES_O);
 
 	memcpy(dest, buffer, length);
+
+	static const vtable_t vt = {
+		.__str__ = byte_str,
+	};
+
+	object_reg_dunders(dest, &vt);
 
 	return dest;
 }
@@ -44,6 +59,12 @@ uint8_t *new_bytes(int length)
 	dest = alloc(length, sizeof(uint8_t), NT_BYTES_O);
 
 	memset(dest, 0, length);
+
+	static const vtable_t vt = {
+		.__str__ = byte_str,
+	};
+
+	object_reg_dunders(dest, &vt);
 
 	return dest;
 }
